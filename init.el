@@ -501,8 +501,6 @@
 
 ;; Typescript ------------------------------------------------------------------
 
-
-
 (use-package nvm
   :defer t)
 
@@ -516,9 +514,7 @@
   (setq evil-shift-width js-indent-level)
   (setq-default tab-width 2))
 
-(use-package js2-mode
-  :mode "\\.jsx?\\'"
-  :config
+(defun js2-config ()
   ;; Use js2-mode for Node scripts
   (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
   ;; Don't use built-in syntax checking
@@ -527,14 +523,19 @@
   (add-hook 'js2-mode-hook #'set-js-indentation)
   (add-hook 'json-mode-hook #'set-js-indentation))
 
+(use-package js2-mode
+  :mode "\\.jsx?\\'"
+  :config
+  (js2-config))
+
 (use-package apheleia
   :straight t
   :config
   (apheleia-global-mode +1))
 
 (use-package prettier-js
-  ;; :hook ((js2-mode . prettier-js-mode)
-  ;;        (typescript-mode . prettier-js-mode))
+  :hook ((js2-mode . prettier-js-mode)
+         (typescript-mode . prettier-js-mode))
   :config
   (setq prettier-js-show-errors nil))
 
