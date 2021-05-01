@@ -1,6 +1,12 @@
+;;; package --- Summary
+;;; Commentary:
+
 ;; -----------------------------------------------------------------------------
-;; ---------------------- XIU-MACS -- by: Justin cremer ------------------------
+;; ----------------------- XIU/MACS -- by: Justin cremer -----------------------
+;; ------------------ https://github.com/justincremer/.emacs.d -----------------
 ;; -----------------------------------------------------------------------------
+
+;;; Code:
 
 ;; Startup ---------------------------------------------------------------------
 
@@ -14,7 +20,7 @@
 							  (time-subtract after-init-time before-init-time)))
                      gcs-done)))
 
-;; Make sure correct char standard is used on Windows (thanks Bill)
+;; Make sure Windows doesn't fuck your code up (thanks Bill)
 (set-default-coding-systems 'utf-8)
 
 ;; Package Management ----------------------------------------------------------
@@ -35,7 +41,7 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; Bootstrap straight.el
+;; Bootstraps straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -49,13 +55,10 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;; Always use straight to install on systems other than Linux
 (setq straight-use-package-by-default (not (eq system-type 'gnu/linux)))
 
-;; Use straight.el for use-package expressions
 (straight-use-package 'use-package)
 
-;; Load the helper package for commands like `straight-x-clean-unused-repos'
 (require 'straight-x)
 
 ;; Backups ---------------------------------------------------------------------
@@ -74,10 +77,10 @@
 (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
       url-history-file (expand-file-name "url/history" user-emacs-directory))
 
-;; Use no-littering to automatically set common paths to the new user-emacs-directory
+;; Automatically set common paths to the new user-emacs-directory
 (use-package no-littering)
 
-;; Keep customization settings in a temporary file
+;; Keep gross customization settings in a temporary file (thanks Ambrevar)
 (setq custom-file
       (if (boundp 'server-socket-dir)
           (expand-file-name "custom.el" server-socket-dir)
@@ -104,17 +107,6 @@
 (use-package emojify
   :hook (erc-mode . emojify-mode)
   :commands emojify-mode)
-
-;; Unicode Ligatures -----------------------------------------------------------
-
-(defun replace-unicode-font-mapping (block-name old-font new-font)
-  (let* ((block-idx (cl-position-if
-                     (lambda (i) (string-equal (car i) block-name))
-                     unicode-fonts-block-font-mapping))
-         (block-fonts (cadr (nth block-idx unicode-fonts-block-font-mapping)))
-         (updated-block (cl-substitute new-font old-font block-fonts :test 'string-equal)))
-    (setf (cdr (nth block-idx unicode-fonts-block-font-mapping))
-          `(,updated-block))))
 
 (use-package unicode-fonts
   :custom (unicode-fonts-skip-font-groups '(low-quality-glyphs))
@@ -144,7 +136,8 @@
 (dolist (mode '(org-mode-hook
 				shell-mode-hook
 				eshell-mode-hook
-				term-mode-hook))
+				term-mode-hook
+				treemacs-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (use-package all-the-icons)
@@ -157,7 +150,7 @@
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom (doom-modeline-height 15)) 
+  :custom (doom-modeline-height 15))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -179,14 +172,14 @@
 (use-package general
   :config
   (general-evil-setup t)
-  (general-create-definer leader-key-def
+  (general-create-definer xiu/leader-key-def
 	:keymaps '(normal insert visual)
 	:prefix "SPC"
-	:global-prefix "C-SPC")
+	:global-prefix "C-<return>")
   (general-create-definer ctrl-c-keys
 	:prefix "C-c"))
 
-(leader-key-def
+(xiu/leader-key-def
   "t" '(:ignore t :which-key "toggles")
   "tt" '(counsel-load-theme :which-key "choose theme"))
 
@@ -215,7 +208,7 @@
   (setq enable-recursive-minibuffers t)
 
   ;; Use different regex strategies per completion command
-  (push '(completion-at-point . ivy--regex-fuzzy) ivy-re-builders-alist) ;; This doesn't seem to work...
+  (push '(completion-at-point . ivy--regex-fuzzy) ivy-re-builders-alist)
   (push '(swiper . ivy--regex-ignore-order) ivy-re-builders-alist)
   (push '(counsel-M-x . ivy--regex-ignore-order) ivy-re-builders-alist)
 
@@ -224,6 +217,17 @@
   (setf (alist-get 'counsel-projectile-rg ivy-height-alist) 15)
   (setf (alist-get 'swiper ivy-height-alist) 15)
   (setf (alist-get 'counsel-switch-buffer ivy-height-alist) 7))
+
+(use-package hydra)
+
+(defhydra hydra-text-scale (:timeout 4)
+  "scale text"
+  ("j" text-scale-increase "in")
+  ("k" text-scale-decrease "out")
+  ("f" nil "finished" :exit t))
+
+(xiu/leader-key-def
+  "ts" '(hydra-text-scale/body :which-key "scale-text"))
 
 (use-package ivy-hydra
   :defer t
@@ -293,7 +297,7 @@
   :config
   (ivy-prescient-mode 1))
 
-(leader-key-def
+(xiu/leader-key-def
   "r"   '(ivy-resume :which-key "ivy resume")
   "f"   '(:ignore t :which-key "files")
   "ff"  '(counsel-find-file :which-key "open file")
@@ -307,36 +311,15 @@
 (use-package avy
   :commands (avy-goto-char avy-goto-word-0 avy-goto-line))
 
-(leader-key-def
+(xiu/leader-key-def
   "j"   '(:ignore t :which-key "jump")
   "jj"  '(avy-goto-char :which-key "jump to char")
   "jw"  '(avy-goto-word-0 :which-key "jump to word")
   "jl"  '(avy-goto-line :which-key "jump to line"))
 
-;; Helpful ---------------------------------------------------------------------
-
-(use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . helpful-function)
-  ([remap describe-symbol] . helpful-symbol)
-  ([remap describe-variable] . helpful-variable)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-key] . helpful-key))
-
-(leader-key-def
-  "e"  '(:ignore t :which-key "eval")
-  "eb" '(eval-buffer :which-key "eval buffer"))
-
-(leader-key-def
-  :keymaps '(visual)
-  "er" '(eval-region :which-key "eval region"))
-
 ;; Evil -------------------------------------------------------------------
 
-(defun evil-hook ()
+(defun xiu/evil-hook ()
   (dolist (mode '(custom-mode
 				  shell-mode
 				  eshell-mode
@@ -349,7 +332,7 @@
 				  sauron-mode))
 	(add-to-list 'evil-emacs-state-modes mode)))
 
-(defun dont-use-arrows ()
+(defun xiu/dont-use-arrows ()
   (interactive)
   (message "arrow keys make fingers go brrrrrr"))
 
@@ -361,23 +344,20 @@
   (setq evil-want-C-i-jump nil)
   (setq evil-respect-visual-line-mode t)
   :config
-  (add-hook 'evil-mode-hook 'evil-hook)
+  (add-hook 'evil-mode-hook 'xiu/evil-hook)
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
-  (define-key evil-normal-state-map (kbd "<left>") 'dont-use-arrows)
-  (define-key evil-normal-state-map (kbd "<right>") 'dont-use-arrows)
-  (define-key evil-normal-state-map (kbd "<down>") 'dont-use-arrows)
-  (define-key evil-normal-state-map (kbd "<up>") 'dont-use-arrows)
-  (evil-global-set-key 'motion (kbd "<left>") 'dont-use-arrows)
-  (evil-global-set-key 'motion (kbd "<right>") 'dont-use-arrows)
-  (evil-global-set-key 'motion (kbd "<down>") 'dont-use-arrows)
-  (evil-global-set-key 'motion (kbd "<up>") 'dont-use-arrows)
-
+  (define-key evil-normal-state-map (kbd "<left>") 'xiu/dont-use-arrows)
+  (define-key evil-normal-state-map (kbd "<right>") 'xiu/dont-use-arrows)
+  (define-key evil-normal-state-map (kbd "<down>") 'xiu/dont-use-arrows)
+  (define-key evil-normal-state-map (kbd "<up>") 'xiu/dont-use-arrows)
+  (evil-global-set-key 'motion (kbd "<left>") 'xiu/dont-use-arrows)
+  (evil-global-set-key 'motion (kbd "<right>") 'xiu/dont-use-arrows)
+  (evil-global-set-key 'motion (kbd "<down>") 'xiu/dont-use-arrows)
+  (evil-global-set-key 'motion (kbd "<up>") 'xiu/dont-use-arrows)
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
 
@@ -386,32 +366,36 @@
   :config
   (evil-collection-init))
 
-;; Hydra -----------------------------------------------------------------------
-
-(use-package hydra)
-
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
-
-(leader-key-def
-  "ts" '(hydra-text-scale/body :which-key "scale-text"))
-
 ;; Projectile ------------------------------------------------------------------
+
+(defun xiu/switch-project ()
+  (persp-switch (projectile-project-name))
+  (magit-status))
 
 (use-package projectile
   :diminish projectile-mode
   :config (projectile-mode)
-  :custom ((projetile-completion-system 'ivy))
+  :demand t
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  (setq projectile-switch-project-action #'projectile-dired))
+  (when (file-directory-p "~/Development")
+    (setq projectile-project-search-path '("~/Development")))
+  (setq projectile-switch-project-action #'xiu/switch-project-action))
 
 (use-package counsel-projectile
+  :after projectile
+  :bind (("C-M-p" . counsel-projectile-find-file))
   :config (counsel-projectile-mode))
+
+(xiu/leader-key-def
+  "pf"  'counsel-projectile-find-file
+  "ps"  'counsel-projectile-switch-project
+  "pF"  'counsel-projectile-rg
+  ;; "pF"  'consult-ripgrep
+  "pp"  'counsel-projectile
+  "pc"  'projectile-compile-project
+  "pd"  'projectile-dired)
 
 ;; Magit -----------------------------------------------------------------------
 
@@ -421,7 +405,7 @@
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-(leader-key-def
+(xiu/leader-key-def
   "g"   '(:ignore t :which-key "git")
   "gs"  'magit-status
   "gd"  'magit-diff-unstaged
@@ -453,7 +437,7 @@
   (font-lock-add-keywords 'org-mode
                           '(("^ *\\([-]\\) "
                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-
+  (set-face-attribute 'org-document-title nil :font "Fira Code Retina:antialias=subpixel" :weight 'bold :height 1.3)
   (dolist (face '((org-level-1 . 1.2)
                   (org-level-2 . 1.1)
                   (org-level-3 . 1.05)
@@ -462,8 +446,7 @@
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Fira Code Retina:antialias=subpixel" :weight 'regular :height (cdr face)))
-
+	(set-face-attribute (car face) nil :font "Fira Code Retina:antialias=subpixel" :weight 'regular :height (cdr face)))
   (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
   (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
   (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
@@ -495,9 +478,104 @@
 ;; LSP Mode --------------------------------------------------------------------
 
 (use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :init (setq lsp-keymap-prefix "C-c l") ;; or 'C-l'
-  :config (lsp-enable-which-key-integration t))
+  :straight t
+  :commands lsp
+  :hook ((typescript-mode js2-mode web-mode) . lsp)
+  :bind (:map lsp-mode-map
+			  ("TAB" . completion-at-point))
+  :custom (lsp-headerline-breadcrumb-enable t))
+
+(xiu/leader-key-def
+  "l"  '(:ignore t :which-key "lsp")
+  "ld" 'xref-find-definitions
+  "lr" 'xref-find-references
+  "ln" 'lsp-ui-find-next-reference
+  "lp" 'lsp-ui-find-prev-reference
+  "ls" 'counsel-imenu
+  "le" 'lsp-ui-flycheck-list
+  "lS" 'lsp-ui-sideline-mode
+  "lX" 'lsp-execute-code-action)
+
+(use-package lsp-ui
+  :straight t
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-sideline-show-hover nil)
+  (setq lsp-ui-doc-position 'bottom)
+  (lsp-ui-doc-show))
+
+(use-package lsp-treemacs
+  :after lsp treemacs)
+
+;; Company ---------------------------------------------------------------------
+
+(use-package company
+  :after lsp-mode
+  :hook (prog-mode . company-mode)
+  :bind
+  (:map company-active-map
+		("<tab>" . company-complete-selection))
+  (:map lsp-mode-map
+		("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+
+;; Debug Adapter ---------------------------------------------------------------
+
+(use-package dap-mode
+  :straight t
+  :custom
+  (lsp-enable-dap-auto-configure nil)
+  :config
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (require 'dap-node)
+  (dap-node-setup))
+
+;; Meta Lisp -------------------------------------------------------------------
+
+;; (use-package lispy
+;;   :hook ((emacs-lisp-mode . lispy-mode)
+;;          (scheme-mode . lispy-mode)))
+
+;; (use-package lispyville
+;;   :hook ((lispy-mode . lispyville-mode))
+;;   :config
+;;   (lispyville-set-key-theme '(operators c-w additional
+;; 										additional-movement slurp/barf-cp
+;; 										prettify)))
+
+;; Emacs Lisp ------------------------------------------------------------------
+
+;; (add-hook 'emacs-lisp-mode-hook #'flycheck-mode)
+
+(use-package helpful
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . helpful-function)
+  ([remap describe-symbol] . helpful-symbol)
+  ([remap describe-variable] . helpful-variable)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-key] . helpful-key))
+
+(xiu/leader-key-def
+  "e"  '(:ignore t :which-key "eval")
+  "eb" '(eval-buffer :which-key "eval buffer")
+  "er" '(eval-region :which-key "eval region"))
+
+;; Common Lisp -----------------------------------------------------------------
+
+(setq inferior-lisp-program "/usr/bin/sbcl")
+
+(use-package sly
+  :mode "\\.lisp\\'")
 
 ;; Typescript ------------------------------------------------------------------
 
@@ -505,7 +583,7 @@
   :defer t)
 
 (use-package typescript-mode
-  :mode "\\.tsx?\\'"
+  :mode "\\.ts\\'"
   :hook (typescript-mode . lsp-deferred)
   :config (setq typescript-indent-level 2))
 
@@ -533,6 +611,15 @@
   :config
   (apheleia-global-mode +1))
 
+(use-package rainbow-mode
+  :after web-mode
+  :defer t
+  :hook (org-mode
+         emacs-lisp-mode
+         web-mode
+         typescript-mode
+         js2-mode))
+
 (use-package prettier-js
   :hook ((js2-mode . prettier-js-mode)
          (typescript-mode . prettier-js-mode))
@@ -547,6 +634,8 @@
   (setq-default web-mode-code-indent-offset 2)
   (setq-default web-mode-markup-indent-offset 2)
   (setq-default web-mode-attribute-indent-offset 2))
+
+
 
 (use-package impatient-mode
   :straight t)
@@ -568,10 +657,8 @@
                     (markdown-header-face-4 . 1.0)
                     (markdown-header-face-5 . 1.0)))
       (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
-
   (defun markdown-mode-hook ()
     (set-markdown-header-font-sizes))
-
   (add-hook 'markdown-mode-hook 'markdown-mode-hook))
 
 (use-package yaml-mode
@@ -579,19 +666,7 @@
 
 ;; Golang ----------------------------------------------------------------------
 
-;; (use-package go-mode)
-
-;; Common Lisp -----------------------------------------------------------------
-
-(setq inferior-lisp-program "/usr/bin/sbcl")
-
-(use-package sly
-  ;; :disabled
-  :mode "\\.lisp\\'")
-
-(use-package slime 
-  :disabled
-  :mode "\\.lisp\\'")
+(use-package go-mode)
 
 ;; Flycheck --------------------------------------------------------------------
 
@@ -610,9 +685,17 @@
 (use-package smartparens
   :hook (prog-mode . smartparens-mode))
 
-;; Misc  -----------------------------------------------------------------------
-;; TODO: clean up
-;; (use-package projectile :ensure t) ;; project management
-;; (use-package lsp-ui :ensure t) ;; UI for LSP
-;; (use-package company :ensure t) ;; Auto-complete
-;; (use-package hover :ensure t) ;; run app from desktop without emulator
+(use-package paren
+  :config
+  (set-face-attribute 'show-paren-match-expression nil :background "#363e4a")
+  (show-paren-mode 1))
+
+;; Treemacs  -------------------------------------------------------------------
+
+(use-package treemacs)
+
+;; Hover -----------------------------------------------------------------------
+
+(use-package hover :ensure t)
+
+
