@@ -436,7 +436,7 @@
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-(Xiu/leader-key-def
+(xiu/leader-key-def
   "g"   '(:ignore t :which-key "git")
   "gs"  'magit-status
   "gd"  'magit-diff-unstaged
