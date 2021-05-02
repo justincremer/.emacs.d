@@ -114,24 +114,20 @@
 
 ;; Style -----------------------------------------------------------------------
 
-(setq initial-frame-alist '((fullscreen . maximized)))
-
-(unless nil
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1)
-  (menu-bar-mode -1)
-  (tooltip-mode -1)
-  (set-fringe-mode 5)
-  (electric-pair-mode 1)
-  (column-number-mode)
-  (global-display-line-numbers-mode t)
-  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
-  (setq mouse-wheel-progressive-speed nil)
-  (setq mouse-wheel-follow-mouse 't)
-  (setq scroll-step 1)
-  (setq use-dialog-box nil)
-  (setq visible-bell t)
-  (setq inhibit-startup-message t))
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+(tooltip-mode -1)
+(set-fringe-mode 5)
+(column-number-mode)
+(global-display-line-numbers-mode t)
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
+(setq mouse-wheel-progressive-speed nil)
+(setq mouse-wheel-follow-mouse 't)
+(setq scroll-step 1)
+(setq use-dialog-box nil)
+(setq visible-bell t)
+(setq inhibit-startup-message t)
 
 (dolist (mode '(org-mode-hook
 				shell-mode-hook
@@ -140,10 +136,20 @@
 				treemacs-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+(use-package smartparens
+  :hook (prog-mode . smartparens-mode))
+
+(use-package paren
+  :config
+  (set-face-attribute 'show-paren-match-expression nil :background "#363e4a")
+  (show-paren-mode 1))
+
 (use-package all-the-icons)
 
 (use-package doom-themes
-  :init (load-theme 'doom-Iosvkem t))
+  :init (load-theme 'doom-dark+ t))
+  ;; :init (load-theme 'doom-Iosvkem t))
+  ;; :init (load-theme 'doom-acario-dark t))
 
 (setq-default tab-width 4)
 
@@ -155,7 +161,27 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
+(use-package alert
+  :commands alert
+  :config
+  (setq alert-default-style 'notifications))
+
 (use-package diminish)
+
+;; Workspaces ------------------------------------------------------------------
+
+(use-package perspective
+  :demand t
+  :bind (("C-M-j" . persp-counsel-switch-buffer)
+         ("C-M-k" . persp-switch)
+         ("C-M-n" . persp-next)
+         ("C-x k" . persp-kill-buffer*))
+  :custom
+  (persp-initial-frame-name "Main")
+  :config
+  ;; Running `persp-mode' multiple times resets the perspective list...
+  (unless (equal persp-mode t)
+    (persp-mode)))
 
 ;; Which Key  ------------------------------------------------------------------
 
@@ -168,14 +194,16 @@
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 (global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
+(global-unset-key (kbd "C-/"))
 
 (use-package general
   :config
-  (general-evil-setup t)
+  ;; (general-evil-setup t)
   (general-create-definer xiu/leader-key-def
-	:keymaps '(normal insert visual)
-	:prefix "SPC"
-	:global-prefix "C-<return>")
+	;; :keymaps '(normal insert visual)
+	;; :prefix "SPC"
+	:prefix "C-/"
+	:global-prefix "C-/")
   (general-create-definer ctrl-c-keys
 	:prefix "C-c"))
 
@@ -319,24 +347,25 @@
 
 ;; Evil -------------------------------------------------------------------
 
-(defun xiu/evil-hook ()
-  (dolist (mode '(custom-mode
-				  shell-mode
-				  eshell-mode
-				  term-mode
-				  git-rebase-mode
-				  erc--mode
-				  circe-server-mode
-				  circe-chat-mode
-				  circe-query-mode
-				  sauron-mode))
-	(add-to-list 'evil-emacs-state-modes mode)))
+;; (defun xiu/evil-hook ()
+;;   (dolist (mode '(custom-mode
+;; 				  shell-mode
+;; 				  eshell-mode
+;; 				  term-mode
+;; 				  git-rebase-mode
+;; 				  erc--mode
+;; 				  circe-server-mode
+;; 				  circe-chat-mode
+;; 				  circe-query-mode
+;; 				  sauron-mode))
+;; 	(add-to-list 'evil-emacs-state-modes mode)))
 
-(defun xiu/dont-use-arrows ()
-  (interactive)
-  (message "arrow keys make fingers go brrrrrr"))
+;; (defun xiu/dont-use-arrows ()
+;;   (interactive)
+;;   (message "arrow keys make fingers go brrrrrr"))
 
 (use-package evil
+  :disabled
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
@@ -362,6 +391,7 @@
   (evil-set-initial-state 'dashboard-mode 'normal))
 
 (use-package evil-collection
+  :disabled
   :after evil
   :config
   (evil-collection-init))
@@ -369,6 +399,7 @@
 ;; Projectile ------------------------------------------------------------------
 
 (defun xiu/switch-project ()
+  "Switch to a workspace with the project name and start `magit-status'."
   (persp-switch (projectile-project-name))
   (magit-status))
 
@@ -381,7 +412,7 @@
   :init
   (when (file-directory-p "~/Development")
     (setq projectile-project-search-path '("~/Development")))
-  (setq projectile-switch-project-action #'xiu/switch-project-action))
+  (setq projectile-switch-project-action #'xiu/switch-project))
 
 (use-package counsel-projectile
   :after projectile
@@ -405,7 +436,7 @@
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-(xiu/leader-key-def
+(Xiu/leader-key-def
   "g"   '(:ignore t :which-key "git")
   "gs"  'magit-status
   "gd"  'magit-diff-unstaged
@@ -525,6 +556,12 @@
 (use-package company-box
   :hook (company-mode . company-box-mode))
 
+;; Flycheck --------------------------------------------------------------------
+
+(use-package flycheck
+  :defer t
+  :hook (lsp-mode . flycheck-mode))
+
 ;; Debug Adapter ---------------------------------------------------------------
 
 (use-package dap-mode
@@ -574,6 +611,8 @@
 
 (setq inferior-lisp-program "/usr/bin/sbcl")
 
+(add-to-list 'auto-mode-alist '("\\.lisp\\'" . common-lisp-mode))
+
 (use-package sly
   :mode "\\.lisp\\'")
 
@@ -589,7 +628,7 @@
 
 (defun set-js-indentation ()
   (setq js-indent-level 2)
-  (setq evil-shift-width js-indent-level)
+  ;; (setq evil-shift-width js-indent-level)
   (setq-default tab-width 2))
 
 (defun js2-config ()
@@ -668,27 +707,11 @@
 
 (use-package go-mode)
 
-;; Flycheck --------------------------------------------------------------------
-
-(use-package flycheck
-  :defer t
-  :hook (lsp-mode . flycheck-mode))
-
 ;; Yasnippet -------------------------------------------------------------------
 
 (use-package yasnippet
   :hook (prog-mode . yas-minor-mode)
   :config (yas-reload-all))
-
-;; Smart Parens ----------------------------------------------------------------
-
-(use-package smartparens
-  :hook (prog-mode . smartparens-mode))
-
-(use-package paren
-  :config
-  (set-face-attribute 'show-paren-match-expression nil :background "#363e4a")
-  (show-paren-mode 1))
 
 ;; Treemacs  -------------------------------------------------------------------
 
