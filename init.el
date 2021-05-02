@@ -161,6 +161,29 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
+(use-package rainbow-mode
+  :after web-mode
+  :defer t
+  :hook (org-mode
+         emacs-lisp-mode
+         web-mode
+         typescript-mode
+         js2-mode))
+
+(use-package apheleia
+  :straight t
+  :config
+  (apheleia-global-mode +1))
+
+(use-package whitespace-cleanup-mode
+  :defer t
+  :hook
+  (org-mode
+   emacs-lisp-mode
+   web-mode
+   js2-mode
+   typescript-mode))
+
 (use-package alert
   :commands alert
   :config
@@ -347,22 +370,22 @@
 
 ;; Evil -------------------------------------------------------------------
 
-;; (defun xiu/evil-hook ()
-;;   (dolist (mode '(custom-mode
-;; 				  shell-mode
-;; 				  eshell-mode
-;; 				  term-mode
-;; 				  git-rebase-mode
-;; 				  erc--mode
-;; 				  circe-server-mode
-;; 				  circe-chat-mode
-;; 				  circe-query-mode
-;; 				  sauron-mode))
-;; 	(add-to-list 'evil-emacs-state-modes mode)))
+(defun xiu/evil-hook ()
+  (dolist (mode '(custom-mode
+				  shell-mode
+				  eshell-mode
+				  term-mode
+				  git-rebase-mode
+				  erc--mode
+				  circe-server-mode
+				  circe-chat-mode
+				  circe-query-mode
+				  sauron-mode))
+	(add-to-list 'evil-emacs-state-modes mode)))
 
-;; (defun xiu/dont-use-arrows ()
-;;   (interactive)
-;;   (message "arrow keys make fingers go brrrrrr"))
+(defun xiu/dont-use-arrows ()
+  (interactive)
+  (message "arrow keys make fingers go brrrrrr"))
 
 (use-package evil
   :disabled
@@ -431,7 +454,7 @@
 ;; Magit -----------------------------------------------------------------------
 
 (use-package magit
-  :bind ("C-M-;" . magit-status)
+  :bind ("C-M-g" . magit-status)
   :commands (magit-status magit-get-current-branch)
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
@@ -459,12 +482,12 @@
 
 ;; Org -------------------------------------------------------------------------
 
-(defun org-mode-setup ()
+(defun xiu/org-mode-setup ()
   (org-indent-mode)
   (variable-pitch-mode 1)
   (visual-line-mode 1))
 
-(defun org-mode-font-setup ()
+(defun xiu/org-mode-font-setup ()
   (font-lock-add-keywords 'org-mode
                           '(("^ *\\([-]\\) "
                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
@@ -486,11 +509,16 @@
   (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 
+(defun xiu/org-mode-visual-fill ()
+  (setq visual-fill-column-width 100
+        visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
+
 (use-package org
-  :hook (org-mode . org-mode-setup)
+  :hook (org-mode . xiu/org-mode-setup)
   :config
   (setq org-ellipsis " ▾")
-  (org-mode-font-setup))
+  (xiu/org-mode-font-setup))
 
 (use-package org-bullets
   :after org
@@ -498,13 +526,8 @@
   :custom
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
-(defun org-mode-visual-fill ()
-  (setq visual-fill-column-width 100
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
-
 (use-package visual-fill-column
-  :hook (org-mode . org-mode-visual-fill))
+  :hook (org-mode . xiu/org-mode-visual-fill))
 
 ;; LSP Mode --------------------------------------------------------------------
 
@@ -618,46 +641,29 @@
 
 ;; Typescript ------------------------------------------------------------------
 
-(use-package nvm
-  :defer t)
-
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config (setq typescript-indent-level 2))
-
-(defun set-js-indentation ()
+(defun xiu/set-js-indentation ()
   (setq js-indent-level 2)
   ;; (setq evil-shift-width js-indent-level)
   (setq-default tab-width 2))
 
-(defun js2-config ()
-  ;; Use js2-mode for Node scripts
+(defun xiu/js2-config ()
   (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
-  ;; Don't use built-in syntax checking
   (setq js2-mode-show-strict-warnings nil)
-  ;; Set up proper indentation in JavaScript and JSON files
-  (add-hook 'js2-mode-hook #'set-js-indentation)
-  (add-hook 'json-mode-hook #'set-js-indentation))
+  (add-hook 'js2-mode-hook #'xiu/set-js-indentation)
+  (add-hook 'json-mode-hook #'xiu/set-js-indentation))
+
+(use-package nvm
+  :defer t)
+
+(use-package typescript-mode
+  :mode "\\.tsx?\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config (setq typescript-indent-level 2))
 
 (use-package js2-mode
   :mode "\\.jsx?\\'"
   :config
-  (js2-config))
-
-(use-package apheleia
-  :straight t
-  :config
-  (apheleia-global-mode +1))
-
-(use-package rainbow-mode
-  :after web-mode
-  :defer t
-  :hook (org-mode
-         emacs-lisp-mode
-         web-mode
-         typescript-mode
-         js2-mode))
+  (xiu/js2-config))
 
 (use-package prettier-js
   :hook ((js2-mode . prettier-js-mode)
@@ -689,16 +695,16 @@
   :mode "\\.md\\'"
   :config
   (setq markdown-command "marked")
-  (defun set-markdown-header-font-sizes ()
+  (defun xiu/set-markdown-header-font-sizes ()
     (dolist (face '((markdown-header-face-1 . 1.2)
                     (markdown-header-face-2 . 1.1)
                     (markdown-header-face-3 . 1.0)
                     (markdown-header-face-4 . 1.0)
                     (markdown-header-face-5 . 1.0)))
       (set-face-attribute (car face) nil :weight 'normal :height (cdr face))))
-  (defun markdown-mode-hook ()
-    (set-markdown-header-font-sizes))
-  (add-hook 'markdown-mode-hook 'markdown-mode-hook))
+  (defun xiu/markdown-mode-hook ()
+    (xiu/set-markdown-header-font-sizes))
+  (add-hook 'xiu/markdown-mode-hook 'xiu/markdown-mode-hook))
 
 (use-package yaml-mode
   :mode "\\.ya?ml\\'")
@@ -720,5 +726,4 @@
 ;; Hover -----------------------------------------------------------------------
 
 (use-package hover :ensure t)
-
 
