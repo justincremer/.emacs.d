@@ -10,17 +10,10 @@
 
 ;; Startup ---------------------------------------------------------------------
 
+;; Set garbage collection threshold for performance reasons
 (setq gc-cons-threshold (* 50 1000 1000))
 
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (message "*** Emacs loaded in %s with %d garbage collections."
-                     (format "%.2f seconds"
-                             (float-time
-							  (time-subtract after-init-time before-init-time)))
-                     gcs-done)))
-
-;; Make sure Windows doesn't fuck your code up (thanks Bill)
+;; Make sure Windows doesn't wreck your char sets (thanks Bill)
 (set-default-coding-systems 'utf-8)
 
 ;; Package Management ----------------------------------------------------------
@@ -55,7 +48,7 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-(setq straight-use-package-by-default (not (eq system-type 'gnu/linux)))
+(defvar straight-use-package-by-default (not (eq system-type 'gnu/linux)))
 
 (straight-use-package 'use-package)
 
@@ -80,7 +73,7 @@
 ;; Automatically set common paths to the new user-emacs-directory
 (use-package no-littering)
 
-;; Keep gross customization settings in a temporary file (thanks Ambrevar)
+;; Keep customization settings out of sight (thanks Ambrevar)
 (setq custom-file
       (if (boundp 'server-socket-dir)
           (expand-file-name "custom.el" server-socket-dir)
@@ -118,7 +111,7 @@
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (tooltip-mode -1)
-(set-fringe-mode 5)
+(set-fringe-mode 10)
 (column-number-mode)
 (global-display-line-numbers-mode t)
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
@@ -191,6 +184,41 @@
 
 (use-package diminish)
 
+;; Dashboard -------------------------------------------------------------------
+
+(defun xiu/load-time-message ()
+  "Return a string displaying the init time and garbage colletions."
+  (format "Emacs loaded in %s with %d garbage collections."
+   (format "%.2f seconds"
+		   (float-time
+			(time-subtract after-init-time before-init-time)))
+   gcs-done))
+
+(defun xiu/dashboard-config ()
+  "Configuration for startup `dashboard'."
+  (dashboard-setup-startup-hook)
+  (setq dashboard-banner-logo-title "Welcome to Xiumacs")
+  (setq dashboard-init-info (xiu/load-time-message))
+  ;; (setq dashboard-set-footer nil)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-modify-heading-icons '((recents . "file-text")
+										 (bookmarks . "book")))
+  (setq dashboard-center-content t)
+  (setq dashboard-show-shortcuts t)
+  (setq dashboard-set-navigator t)
+  (setq dashboard-items '((recents . 5)
+						  (bookmarks . 5)
+						  (projects . 5)
+						  (agenda . 5)
+						  (registers . 5))))
+  ;; (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
+
+(use-package dashboard
+  :ensure t
+  :config
+  (xiu/dashboard-config))
+
 ;; Workspaces ------------------------------------------------------------------
 
 (use-package perspective
@@ -221,18 +249,27 @@
 
 (use-package general
   :config
-  ;; (general-evil-setup t)
   (general-create-definer xiu/leader-key-def
-	;; :keymaps '(normal insert visual)
-	;; :prefix "SPC"
 	:prefix "C-/"
 	:global-prefix "C-/")
   (general-create-definer ctrl-c-keys
 	:prefix "C-c"))
+  
+(xiu/leader-key-def
+  "t" '(:ignore t :which-key "misc")
+  "tf" '(counsel-load-theme :which-key "choose theme"))
+
+;; Treemacs ------------------------------------------------------------------
+
+(use-package treemacs
+  :ensure t)
+
+(use-package treemacs-projectile
+  :after treemacs projectile
+  :ensure t)
 
 (xiu/leader-key-def
-  "t" '(:ignore t :which-key "toggles")
-  "tt" '(counsel-load-theme :which-key "choose theme"))
+  "tt" '(treemacs :which-key "treemacs"))
 
 ;; Ivy -------------------------------------------------------------------------
 
@@ -416,7 +453,13 @@
 (use-package evil-collection
   :disabled
   :after evil
+  :init
+  (setq evil-collection-company-use-tng nil)
+  :custom
+  (evil-collection-outline-bind-tab-p nil)
   :config
+  (setq evil-collection-mode-list
+		(remove 'lispy evil-collection-mode-list))
   (evil-collection-init))
 
 ;; Projectile ------------------------------------------------------------------
@@ -443,11 +486,10 @@
   :config (counsel-projectile-mode))
 
 (xiu/leader-key-def
+  "pp"  'counsel-projectile
   "pf"  'counsel-projectile-find-file
   "ps"  'counsel-projectile-switch-project
-  "pF"  'counsel-projectile-rg
-  ;; "pF"  'consult-ripgrep
-  "pp"  'counsel-projectile
+  "pF"  'counsel-projectile-rgc
   "pc"  'projectile-compile-project
   "pd"  'projectile-dired)
 
@@ -597,6 +639,7 @@
   (require 'dap-node)
   (dap-node-setup))
 
+
 ;; Meta Lisp -------------------------------------------------------------------
 
 ;; (use-package lispy
@@ -612,7 +655,7 @@
 
 ;; Emacs Lisp ------------------------------------------------------------------
 
-;; (add-hook 'emacs-lisp-mode-hook #'flycheck-mode)
+(add-hook 'emacs-lisp-mode-hook #'flycheck-mode)
 
 (use-package helpful
   :custom
@@ -634,19 +677,22 @@
 
 (setq inferior-lisp-program "/usr/bin/sbcl")
 
-(add-to-list 'auto-mode-alist '("\\.lisp\\'" . common-lisp-mode))
+;; (use-package sly
+;;   :mode "\\.lisp\\'")
 
-(use-package sly
-  :mode "\\.lisp\\'")
+(setq auto-mode-alist (append '(("\\.lisp" . common-lisp-mode))
+                                  auto-mode-alist))
 
 ;; Typescript ------------------------------------------------------------------
 
 (defun xiu/set-js-indentation ()
+  "Set the default indentation width for newlines."
   (setq js-indent-level 2)
-  ;; (setq evil-shift-width js-indent-level)
+  (setq evil-shift-width js-indent-level)
   (setq-default tab-width 2))
 
 (defun xiu/js2-config ()
+  "Set environment variables for js2-mode."
   (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
   (setq js2-mode-show-strict-warnings nil)
   (add-hook 'js2-mode-hook #'xiu/set-js-indentation)
@@ -656,7 +702,7 @@
   :defer t)
 
 (use-package typescript-mode
-  :mode "\\.tsx?\\'"
+  :mode "\\.ts\'"
   :hook (typescript-mode . lsp-deferred)
   :config (setq typescript-indent-level 2))
 
@@ -674,12 +720,20 @@
 ;; HTML ------------------------------------------------------------------------
 
 (use-package web-mode
-  :mode "(\\.\\(html?\\|ejs\\|tsx\\|jsx\\)\\'"
+  :mode (("\\.jsx?\\'" . web-mode)
+		 ("\\.tsx?\\'" . web-mode)
+		 ("\\.html?\\'" . web-mode)
+		 ("\\.ejs\\'" . web-mode)
+		 ("\\.vue\\'" . web-mode)
+		 ("\\.svelte\\'" . web-mode)
+		 ("\\.json\\'" . web-mode))
+  :commands web-mode
   :config
   (setq-default web-mode-code-indent-offset 2)
   (setq-default web-mode-markup-indent-offset 2)
-  (setq-default web-mode-attribute-indent-offset 2))
-
+  (setq-default web-mode-attribute-indent-offset 2)
+  (setq web-mode-content-types-alist
+		'(("jsx" . "\\.js[x]?\\'"))))
 
 
 (use-package impatient-mode
@@ -719,11 +773,9 @@
   :hook (prog-mode . yas-minor-mode)
   :config (yas-reload-all))
 
-;; Treemacs  -------------------------------------------------------------------
-
-(use-package treemacs)
-
 ;; Hover -----------------------------------------------------------------------
 
 (use-package hover :ensure t)
+
+;;; init.el ends here
 
