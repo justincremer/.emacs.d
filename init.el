@@ -97,10 +97,33 @@
 
 (setq-default tab-width 4)
 
+(defun xiu/ligature-config ()
+  "Configuration for `ligature'."
+  (ligature-set-ligatures 't ("www"))
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+                                       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+                                       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+                                       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+                                       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+                                       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+                                       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+                                       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+                                       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+                                       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+                                       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+                                       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+                                       ))
+  (global-ligature-mode t))
+
 (set-face-attribute 'default nil
-					;; :font "Fira Code Retina:antialias=subpixel"
-					:font "Iosevka"
+					:font "Iosevka:regular:antialias=subpixel:hinting=true"
 					:height default-font-size)
+
+;; (use-package ligature
+;;   :ensure t
+;;   :straight t
+;;   :config (xiu/ligature-config))
 
 (use-package emojify
   :hook (erc-mode . emojify-mode)
@@ -788,21 +811,30 @@
   (add-hook 'xiu/markdown-mode-hook 'xiu/markdown-mode-hook))
 
 (use-package yaml-mode
+  :ensure t
   :mode "\\.ya?ml\\'")
 
 ;; Golang ----------------------------------------------------------------------
 
-(use-package go-mode)
+(use-package go-mode
+  :ensure t)
+
+;; Haskell ---------------------------------------------------------------------
+
+(use-package haskell-mode
+  :ensure t)
 
 ;; Yasnippet -------------------------------------------------------------------
 
 (use-package yasnippet
+  :ensure t
   :hook (prog-mode . yas-minor-mode)
   :config (yas-reload-all))
 
 ;; Hover -----------------------------------------------------------------------
 
-(use-package hover :ensure t)
+(use-package hover
+  :ensure t)
 
 ;;; init.el ends here
 
