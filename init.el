@@ -52,6 +52,10 @@
 
 (straight-use-package 'use-package)
 
+;; (lambda ()
+;;   (require 'straight-x))
+
+;; (add-to-list 'load-path "/home/xiuxiu/.emacs.d/straight/build/straight/")
 (require 'straight-x)
 
 ;; Backups ---------------------------------------------------------------------
@@ -80,8 +84,6 @@
         (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
 (load custom-file t)
 
-;; Auto save -------------------------------------------------------------------
-
 (use-package super-save
   :defer 1
   :diminish super-save-mode
@@ -91,10 +93,13 @@
 
 ;; Font ------------------------------------------------------------------------
 
-(defvar default-font-size 110)
+(defvar default-font-size 120)
+
+(setq-default tab-width 4)
 
 (set-face-attribute 'default nil
-					:font "Fira Code Retina:antialias=subpixel"
+					;; :font "Fira Code Retina:antialias=subpixel"
+					:font "Iosevka"
 					:height default-font-size)
 
 (use-package emojify
@@ -140,11 +145,9 @@
 (use-package all-the-icons)
 
 (use-package doom-themes
-  :init (load-theme 'doom-dark+ t))
-  ;; :init (load-theme 'doom-Iosvkem t))
-  ;; :init (load-theme 'doom-acario-dark t))
-
-(setq-default tab-width 4)
+  :init (load-theme 'doom-Iosvkem t))
+;; :init (load-theme 'doom-dark+ t))
+;; :init (load-theme 'doom-acario-dark t))
 
 (use-package doom-modeline
   :ensure t
@@ -207,17 +210,15 @@
   (setq dashboard-center-content t)
   (setq dashboard-show-shortcuts t)
   (setq dashboard-set-navigator t)
-  (setq dashboard-items '((recents . 5)
-						  (bookmarks . 5)
-						  (projects . 5)
-						  (agenda . 5)
-						  (registers . 5))))
-  ;; (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
+  (setq dashboard-items'((recents . 5)
+						 (projects . 20))))
+;; (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
 
 (use-package dashboard
   :ensure t
   :config
-  (xiu/dashboard-config))
+  (progn
+	(xiu/dashboard-config)))
 
 ;; Workspaces ------------------------------------------------------------------
 
@@ -225,7 +226,8 @@
   :demand t
   :bind (("C-M-j" . persp-counsel-switch-buffer)
          ("C-M-k" . persp-switch)
-         ("C-M-n" . persp-next)
+         ("C-M-l" . persp-next)
+		 ("C-M-h" . persp-prev)
          ("C-x k" . persp-kill-buffer*))
   :custom
   (persp-initial-frame-name "Main")
@@ -256,16 +258,38 @@
 	:prefix "C-c"))
   
 (xiu/leader-key-def
-  "t" '(:ignore t :which-key "misc")
-  "tf" '(counsel-load-theme :which-key "choose theme"))
+ "s" '(ace-swap-window :which-key "swap windows")
+ "t" '(:ignore t :which-key "toggle")
+ "tf" '(counsel-load-theme :which-key "choose theme"))
 
 ;; Treemacs ------------------------------------------------------------------
 
 (use-package treemacs
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package treemacs-projectile
-  :after treemacs projectile
+  :after (treemacs projectile)
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :after (treemacs dired)
+  :ensure t
+  :config
+  (treemacs-icons-dired-mode))
+
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
+
+(use-package treemacs-perspective
+  :after (treemacs perspective)
+  :ensure t
+  :config
+  (treemacs-set-scope-type 'Perspectives))
+
+(use-package lsp-treemacs
+  :after (lsp treemacs)
   :ensure t)
 
 (xiu/leader-key-def
@@ -408,6 +432,7 @@
 ;; Evil -------------------------------------------------------------------
 
 (defun xiu/evil-hook ()
+  "Determines which modes evade evil-mode."
   (dolist (mode '(custom-mode
 				  shell-mode
 				  eshell-mode
@@ -421,6 +446,7 @@
 	(add-to-list 'evil-emacs-state-modes mode)))
 
 (defun xiu/dont-use-arrows ()
+  "Yells at you for using arrow keys in evil mode."
   (interactive)
   (message "arrow keys make fingers go brrrrrr"))
 
@@ -482,7 +508,7 @@
 
 (use-package counsel-projectile
   :after projectile
-  :bind (("C-M-p" . counsel-projectile-find-file))
+  :bind (("C-M-f" . counsel-projectile-find-file))
   :config (counsel-projectile-mode))
 
 (xiu/leader-key-def
@@ -525,11 +551,13 @@
 ;; Org -------------------------------------------------------------------------
 
 (defun xiu/org-mode-setup ()
+  "Syntax styling in `org-mode'."
   (org-indent-mode)
   (variable-pitch-mode 1)
   (visual-line-mode 1))
 
 (defun xiu/org-mode-font-setup ()
+  "Face styling in `org-mode'."
   (font-lock-add-keywords 'org-mode
                           '(("^ *\\([-]\\) "
                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
@@ -552,6 +580,7 @@
   (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 
 (defun xiu/org-mode-visual-fill ()
+  "Line wrapping in `org-mode'."
   (setq visual-fill-column-width 100
         visual-fill-column-center-text t)
   (visual-fill-column-mode 1))
@@ -600,9 +629,6 @@
   (setq lsp-ui-sideline-show-hover nil)
   (setq lsp-ui-doc-position 'bottom)
   (lsp-ui-doc-show))
-
-(use-package lsp-treemacs
-  :after lsp treemacs)
 
 ;; Company ---------------------------------------------------------------------
 
@@ -677,11 +703,12 @@
 
 (setq inferior-lisp-program "/usr/bin/sbcl")
 
-;; (use-package sly
-;;   :mode "\\.lisp\\'")
-
 (setq auto-mode-alist (append '(("\\.lisp" . common-lisp-mode))
-                                  auto-mode-alist))
+                              auto-mode-alist))
+
+(use-package sly
+  ;; :mode "\\.lisp\\'"
+  )
 
 ;; Typescript ------------------------------------------------------------------
 
