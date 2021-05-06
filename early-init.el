@@ -6,13 +6,14 @@
 ;; Disable compiler warning for deprecated packages
 
 (if (not (version< emacs-version "28.0.0"))
-	  "Disables obsolete function messages in `native-comp'."
-	  (define-advice define-obsolete-function-alias (:filter-args (ll) fix-obsolete)
-		(let ((obsolete-name (pop ll))
-			  (current-name (pop ll))
-			  (when (if ll (pop ll) "1"))
-			  (docstring (if ll (pop ll) nil)))
-		  (list obsolete-name current-name when docstring))))
+	"Disables obsolete function messages in `native-comp'."
+  (define-advice define-obsolete-function-alias
+	  (:filter-args (ll) fix-obsolete)
+	(let ((obsolete-name (pop ll))
+		  (current-name (pop ll))
+		  (when (if ll (pop ll) "1"))
+		  (docstring (if ll (pop ll) nil)))
+	  (list obsolete-name current-name when docstring))))
 
 (setq byte-compile-warnings '(cl-functions))
 

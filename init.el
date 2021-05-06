@@ -75,6 +75,9 @@
 (require 'init-ui)
 (require 'init-dashboard)
 
+(require 'init-eshell)
+(require 'init-shell)
+
 (require 'init-perspective)
 (require 'init-general)
 (require 'init-treemacs)
@@ -94,8 +97,8 @@
 (require 'init-clisp)
 (require 'init-markdown)
 (require 'init-web)
+(require 'init-dart)
 (require 'init-go)
 (require 'init-haskell)
 
 ;;; init.el ends here
-
