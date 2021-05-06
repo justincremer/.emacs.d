@@ -1,487 +1,84 @@
-;;; package --- Summary
-;;; Commentary:
+;;; init.el --- Start this puppy up      -*- lexical-binding: t no-byte-compile: t-*-
 
 ;; -----------------------------------------------------------------------------
-;; ----------------------- XIU/MACS -- by: Justin cremer -----------------------
+;; ----------------------- XIUMACS --- by: Justin cremer -----------------------
 ;; ------------------ https://github.com/justincremer/.emacs.d -----------------
 ;; -----------------------------------------------------------------------------
+
+;;; Commentary:
+;;
+;; Turns some numbers into other numbers
+;;
 
 ;;; Code:
 
 ;; Startup ---------------------------------------------------------------------
 
 ;; Set garbage collection threshold for performance reasons
-(setq gc-cons-threshold (* 50 1000 1000))
-
-(defun xiu/emacs-version-number ()
-  "Return a string representing the current version of Emacs."
-  (caddr (split-string (emacs-version))))
-
-;; Native comp obsolete function resolution
-(let ((temp-ver (xiu/emacs-version-number)) (temp-comp '28.0.00))
-  (if (or (string-greaterp temp-ver temp-comp)
-		  (equal temp-ver temp-comp))
-	  (define-advice define-obsolete-function-alias (:filter-args (ll) fix-obsolete)
-		(let ((obsolete-name (pop ll))
-			  (current-name (pop ll))
-			  (when (if ll (pop ll) "1"))
-			  (docstring (if ll (pop ll) nil)))
-		  (list obsolete-name current-name when docstring)))))
-
-;; Package Management ----------------------------------------------------------
-
-(require 'package)
-(setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
-						 ("melpa" . "https://melpa.org/packages/")
-						 ("melpa-stable" . "https://stable.melpa.org/packages/")
-						 ("org" . "https://orgmode.org/elpa/")))
-(package-initialize)
-
-(unless package-archive-contents
-  (package-refresh-contents))
-
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-
-(require 'use-package)
-(setq use-package-always-ensure t)
-
-;; Bootstraps straight.el
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(defvar straight-use-package-by-default (not (eq system-type 'gnu/linux)))
-
-(straight-use-package 'use-package)
-
-(require 'straight-x)
-
-;; Backups ---------------------------------------------------------------------
-
-;; Sets a buffered backup directory
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups"))
-      backup-by-copying t
-      delete-old-versions t
-      kept-new-versions 6
-      kept-old-versions 2
-      version-control t)
-
-(setq disabled-command-function nil)
-
-;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-(setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-      url-history-file (expand-file-name "url/history" user-emacs-directory))
-
-;; Automatically set common paths to the new user-emacs-directory
-(use-package no-littering)
-
-;; Keep customization settings out of sight (thanks Ambrevar)
-(setq custom-file
-      (if (boundp 'server-socket-dir)
-          (expand-file-name "custom.el" server-socket-dir)
-        (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
-(load custom-file t)
-
-(use-package super-save
-  :defer 1
-  :diminish super-save-mode
-  :config
-  (super-save-mode +1)
-  (setq super-save-auto-save-when-idle t))
-
-;; Font ------------------------------------------------------------------------
-
-;; Make sure Windows doesn't wreck your char sets (thanks Bill)
-(set-default-coding-systems 'utf-8)
-
-(defvar default-font-size 120)
-
-(setq-default tab-width 4)
-
-(set-face-attribute 'default nil
-					:font "Iosevka:regular:antialias=subpixel:hinting=true"
-					:height default-font-size)
-
-(use-package unicode-fonts
-  :ensure t
-  :custom (unicode-fonts-skip-font-groups '(low-quality-glyphs))
-  :config (unicode-fonts-setup))
-
-(use-package emojify
-  :ensure t
-  :hook (erc-mode . emojify-mode)
-  :commands emojify-mode)
-
-;; Not working in Emacs 28.0.50
-(use-package ligature
-  :disabled
-  :ensure t
-  :config (xiu/ligature-config))
-
-;; Assign ligation mapping
-(let ((alist `((?! . ,(regexp-opt '("!!" "!=" "!==")))
-               (?# . ,(regexp-opt '("##" "###" "####" "#(" "#?" "#[" "#_" "#_(" "#{")))
-               (?$ . ,(regexp-opt '("$>")))
-               (?% . ,(regexp-opt '("%%")))
-               (?& . ,(regexp-opt '("&&")))
-               (?* . ,(regexp-opt '("*" "**" "***" "**/" "*/" "*>")))
-               (?+ . ,(regexp-opt '("+" "++" "+++" "+>")))
-               (?- . ,(regexp-opt '("--" "---" "-->" "-<" "-<<" "->" "->>" "-}" "-~")))
-               (?. . ,(regexp-opt '(".-" ".." "..." "..<" ".=")))
-               (?/ . ,(regexp-opt '("/*" "/**" "//" "///" "/=" "/==" "/>")))
-               (?: . ,(regexp-opt '(":" "::" ":::" ":=")))
-               (?\; . ,(regexp-opt '(";;")))
-               (?< . ,(regexp-opt '("<!--" "<$" "<$>" "<*" "<*>" "<+" "<+>" "<-" "<--" "<->" "</" "</>" "<<" "<<-" "<<<" "<<=" "<=" "<=" "<=<" "<==" "<=>" "<>" "<|" "<|>" "<~" "<~~")))
-               (?= . ,(regexp-opt '("=/=" "=:=" "=<<" "==" "===" "==>" "=>" "=>>")))
-               (?> . ,(regexp-opt '(">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>")))
-               (?= . ,(regexp-opt '("?=")))
-               (?? . ,(regexp-opt '("??")))
-               (?\[ . ,(regexp-opt '("[]")))
-               (?\\ . ,(regexp-opt '("\\\\" "\\\\\\")))
-               (?^ . ,(regexp-opt '("^=")))
-               (?w . ,(regexp-opt '("www")))
-               (?x . ,(regexp-opt '("x")))
-               (?{ . ,(regexp-opt '("{-")))
-               (?| . ,(regexp-opt '("|=" "|>" "||" "||=")))
-               (?~ . ,(regexp-opt '("~-" "~=" "~>" "~@" "~~" "~~>"))))))
-  (dolist (char-regexp alist)
-    (set-char-table-range composition-function-table (car char-regexp)
-                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
-
-;; Style -----------------------------------------------------------------------
-
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-(tooltip-mode -1)
-(set-fringe-mode 10)
-(column-number-mode)
-(global-display-line-numbers-mode t)
-(setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
-(setq mouse-wheel-progressive-speed nil)
-(setq mouse-wheel-follow-mouse 't)
-(setq scroll-step 1)
-(setq use-dialog-box nil)
-(setq visible-bell t)
-(setq inhibit-startup-message t)
-
-(dolist (mode '(org-mode-hook
-				shell-mode-hook
-				eshell-mode-hook
-				term-mode-hook
-				treemacs-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-(use-package smartparens
-  :hook (prog-mode . smartparens-mode))
-
-(use-package paren
-  :config
-  (set-face-attribute 'show-paren-match-expression nil :background "#363e4a")
-  (show-paren-mode 1))
-
-(use-package all-the-icons)
-
-(use-package doom-themes
-  :init (load-theme 'doom-Iosvkem t))
-;; :init (load-theme 'doom-dark+ t))
-;; :init (load-theme 'doom-acario-dark t))
-
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1)
-  :custom (doom-modeline-height 15))
-
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
-
-(use-package rainbow-mode
-  :after web-mode
-  :defer t
-  :hook (org-mode
-         emacs-lisp-mode
-         web-mode
-         typescript-mode
-         js2-mode))
-
-(use-package apheleia
-  :straight t
-  :config
-  (apheleia-global-mode +1))
-
-(use-package whitespace-cleanup-mode
-  :defer t
-  :hook
-  (org-mode
-   emacs-lisp-mode
-   web-mode
-   js2-mode
-   typescript-mode))
-
-(use-package alert
-  :commands alert
-  :config
-  (setq alert-default-style 'notifications))
-
-(use-package diminish)
-
-;; Dashboard -------------------------------------------------------------------
-
-(defun xiu/load-time-message ()
-  "Return a string displaying the init time and garbage colletions."
-  (format "Loaded in %s with %d garbage collections"
-		  (format "%.2f seconds"
-				  (float-time
-				   (time-subtract after-init-time before-init-time)))
-		  gcs-done))
-
-(defun xiu/dashboard-config ()
-  "Configuration for startup `dashboard'."
-  (dashboard-setup-startup-hook)
-  (setq dashboard-startup-banner 'logo)
-  (setq dashboard-banner-logo-title
-		(format "Welcome to Xiumacs %s" (xiu/emacs-version-number)))
-  (setq dashboard-init-info (xiu/load-time-message))
-  (setq dashboard-footer-icon
-		(all-the-icons-octicon "dashboard"
-							   :height 1.1
-							   :v-adjust -0.05
-							   :face 'font-lock-keyword-face))
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-center-content t)
-  (setq dashboard-show-shortcuts t)
-  (setq dashboard-set-navigator t)
-  (setq dashboard-items'((recents . 5)
-						 (projects . 20)
-						 (agenda . 5))))
-;; (setq dashboard-projects-switch-function 'projectile-persp-switch-project)
-;; (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
-
-(use-package dashboard
-  :after projectile
-  :ensure t
-  :config
-  (xiu/dashboard-config))
-
-;; Workspaces ------------------------------------------------------------------
-
-(use-package perspective
-  :demand t
-  :bind (("C-M-j" . persp-counsel-switch-buffer)
-         ("C-M-k" . persp-switch)
-         ("C-M-l" . persp-next)
-		 ("C-M-h" . persp-prev)
-         ("C-x k" . persp-kill-buffer*))
-  :custom
-  (persp-initial-frame-name "Main")
-  :config
-  ;; Running `persp-mode' multiple times resets the perspective list...
-  (unless (equal persp-mode t)
-    (persp-mode)))
-
-;; Which Key  ------------------------------------------------------------------
-
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config (setq which-key-idle-delay 0.3))
-
-;; General ---------------------------------------------------------------------
-
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
-(global-unset-key (kbd "C-/"))
-
-(use-package general
-  :config
-  (general-create-definer xiu/leader-key-def
-	:prefix "C-/"
-	:global-prefix "C-/")
-  (general-create-definer ctrl-c-keys
-	:prefix "C-c"))
-  
-(xiu/leader-key-def
- "s" '(ace-swap-window :which-key "swap windows")
- "t" '(:ignore t :which-key "toggle")
- "tf" '(counsel-load-theme :which-key "choose theme"))
-
-;; Treemacs ------------------------------------------------------------------
-
-(use-package treemacs
-  :ensure t
-  :defer t)
-
-(use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
-
-(use-package treemacs-icons-dired
-  :after (treemacs dired)
-  :ensure t
-  :config
-  (treemacs-icons-dired-mode))
-
-(use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
-
-(use-package treemacs-perspective
-  :after (treemacs perspective)
-  :ensure t
-  :config
-  (treemacs-set-scope-type 'Perspectives))
-
-(use-package lsp-treemacs
-  :after (lsp treemacs)
-  :ensure t)
-
-(xiu/leader-key-def
-  "tt" '(treemacs :which-key "treemacs"))
-
-;; Ivy -------------------------------------------------------------------------
-
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-		 ("C-;" . comment-line)
-		 :map ivy-minibuffer-map
-		 ("TAB" . ivy-alt-done)
-		 ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :init (ivy-mode 1)
-  :config
-  (setq ivy-use-virtual-buffers t) (setq ivy-wrap t)
-  (setq ivy-count-format "(%d/%d) ")
-  (setq enable-recursive-minibuffers t)
-
-  ;; Use different regex strategies per completion command
-  (push '(completion-at-point . ivy--regex-fuzzy) ivy-re-builders-alist)
-  (push '(swiper . ivy--regex-ignore-order) ivy-re-builders-alist)
-  (push '(counsel-M-x . ivy--regex-ignore-order) ivy-re-builders-alist)
-
-  ;; Set minibuffer height for different commands
-  (setf (alist-get 'counsel-projectile-ag ivy-height-alist) 15)
-  (setf (alist-get 'counsel-projectile-rg ivy-height-alist) 15)
-  (setf (alist-get 'swiper ivy-height-alist) 15)
-  (setf (alist-get 'counsel-switch-buffer ivy-height-alist) 7))
-
-(use-package hydra)
-
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
-
-(xiu/leader-key-def
-  "ts" '(hydra-text-scale/body :which-key "scale-text"))
-
-(use-package ivy-hydra
-  :defer t
-  :after hydra)
-
-(use-package ivy-rich
-  :init (ivy-rich-mode 1)
-  :after counsel
-  :config
-  (setq ivy-format-function #'ivy-format-function-line)
-  (setq ivy-rich-display-transformers-list
-        (plist-put ivy-rich-display-transformers-list
-                   'ivy-switch-buffer
-                   '(:columns
-                     ((ivy-rich-candidate (:width 40))
-                      (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right)); return the buffer indicators
-                      (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))          ; return the major mode info
-                      (ivy-rich-switch-buffer-project (:width 15 :face success))             ; return project name using `projectile'
-                      (ivy-rich-switch-buffer-path ; return file path relative to project root or `default-directory' if project is nil
-					   (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-                     :predicate
-                     (lambda (cand)
-                       (if-let ((buffer (get-buffer cand)))
-                           ;; Don't mess with EXWM buffers
-                           (with-current-buffer buffer
-                             (not (derived-mode-p 'exwm-mode)))))))))
-
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
-         ("C-x C-f" . counsel-find-file)
-		 ("C-M-l" . counsel-imenu)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history))
-  :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-  :config (setq ivy-initial-inputs-alist nil))
-
-(use-package flx ;; Imroves sorting for fuzzy-matched results
-  :defer t
-  :after ivy
-  :init (setq ivy-flx-limit 10000))
-
-(use-package wgrep)
-(use-package ripgrep)
-
-(use-package ivy-posframe
-  :custom
-  (ivy-posframe-width      115)
-  (ivy-posframe-min-width  115)
-  (ivy-posframe-height     10)
-  (ivy-posframe-min-height 10)
-  :config
-  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
-  (setq ivy-posframe-parameters '((parent-frame . nil)
-                                  (left-fringe . 8)
-                                  (right-fringe . 8)))
-  (ivy-posframe-mode 1))
-
-(use-package prescient
-  :after counsel
-  :config
-  (prescient-persist-mode 1))
-
-(use-package ivy-prescient
-  :after prescient
-  :config
-  (ivy-prescient-mode 1))
-
-(xiu/leader-key-def
-  "r"   '(ivy-resume :which-key "ivy resume")
-  "f"   '(:ignore t :which-key "files")
-  "ff"  '(counsel-find-file :which-key "open file")
-  "C-f" 'counsel-find-file
-  "fr"  '(counsel-recentf :which-key "recent files")
-  "fR"  '(revert-buffer :which-key "revert file")
-  "fj"  '(counsel-file-jump :which-key "jump to file"))
-
-;; Avy -------------------------------------------------------------------------
-
-(use-package avy
-  :commands (avy-goto-char avy-goto-word-0 avy-goto-line))
-
-(xiu/leader-key-def
-  "j"   '(:ignore t :which-key "jump")
-  "jj"  '(avy-goto-char :which-key "jump to char")
-  "jw"  '(avy-goto-word-0 :which-key "jump to word")
-  "jl"  '(avy-goto-line :which-key "jump to line"))
+;; (setq gc-cons-threshold (* 50 1000 1000))
+
+(defvar xiu/gc-cons-threshold (if (display-graphic-p) 64000000 1600000))
+
+(defvar xiu/gc-cons-upper-limit (if (display-graphic-p) 512000000 128000000))
+
+(defvar xiu/gc-timer (run-with-idle-timer 10 t #'garbage-collect))
+
+(defvar default-file-name-handler-alist file-name-handler-alist)
+
+(setq file-name-handler-alist nil)
+(setq gc-cons-threshold xiu/gc-cons-upper-limit
+      gc-cons-percentage 0.5)
+
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq file-name-handler-alist default-file-name-handler-alist)
+            (setq gc-cons-threshold xiu/gc-cons-threshold
+                  gc-cons-percentage 0.1)
+
+            (if (boundp 'after-focus-change-function)
+                (add-function :after after-focus-change-function
+                  (lambda ()
+                    (unless (frame-focus-state)
+                      (garbage-collect))))
+              (add-hook 'focus-out-hook 'garbage-collect))
+
+            (defun my-minibuffer-setup-hook ()
+              (setq gc-cons-threshold xiu/gc-cons-upper-limit))
+
+            (defun my-minibuffer-exit-hook ()
+              (setq gc-cons-threshold xiu/gc-cons-threshold))
+
+            (add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
+            (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)))
+
+;; Load path -------------------------------------------------------------------
+
+(defun update-load-path (&rest _)
+  "Update `load-path'."
+  (dolist (dir '("site-lisp" "lisp"))
+    (push (expand-file-name dir user-emacs-directory) load-path)))
+
+(defun add-subdirs-to-load-path (&rest _)
+  "Add subdirectories to `load-path'."
+  (let ((default-directory (expand-file-name "site-lisp" user-emacs-directory)))
+    (normal-top-level-add-subdirs-to-load-path)))
+
+(advice-add #'package-initialize :after #'update-load-path)
+(advice-add #'package-initialize :after #'add-subdirs-to-load-path)
+
+(update-load-path)
+
+;; Packages  -------------------------------------------------------------------
+
+(require 'init-package)
+(require 'init-basic)
+(require 'init-ui)
+
+(require 'init-dashboard)
+(require 'init-perspective)
+(require 'init-general)
+(require 'init-treemacs)
+(require 'init-ivy)
 
 ;; Evil -------------------------------------------------------------------
 
@@ -684,6 +281,13 @@
   (setq lsp-ui-doc-position 'bottom)
   (lsp-ui-doc-show))
 
+(use-package flycheck
+  :defer t
+  :hook (lsp-mode . flycheck-mode))
+
+(use-package hover
+  :ensure t)
+
 ;; Company ---------------------------------------------------------------------
 
 (use-package company
@@ -700,12 +304,6 @@
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
-
-;; Flycheck --------------------------------------------------------------------
-
-(use-package flycheck
-  :defer t
-  :hook (lsp-mode . flycheck-mode))
 
 ;; Debug Adapter ---------------------------------------------------------------
 
@@ -871,95 +469,6 @@
 
 ;; Golang ----------------------------------------------------------------------
 
-(defun xiu/go-config ()
-  "Configuration for `go-mode'."
-  ;; Pull env vars
-  (with-eval-after-load 'exec-path-from-shell
-	(exec-path-from-shell-copy-envs '("GOPATH" "GO111MODULE" "GOPROXY")))
-
-  (defvar go--tools '("golang.org/x/tools/cmd/goimports"
-					  "github.com/go-delve/delve/cmd/dlv"
-					  "github.com/josharian/impl"
-					  "github.com/cweill/gotests/..."
-					  "github.com/fatih/gomodifytags"
-					  "github.com/davidrjenni/reftools/cmd/fillstruct")
-	"Necessary tools.")
-
-  (defvar go--tools-no-update '("goland.org/x/tools/gopls@latest")
-	"Necessary tools that must not be updated.")
-  
-  (defun go-update-tools ()
-	(interactive)
-	(unless (executable-find "go")
-	  (user-error "Unable to find `go' in `exec-path'!"))
-	(message "Installing go tools...")
-	(let ((proc-name "go-tools")
-          (proc-buffer "*Go Tools*"))
-      (dolist (pkg go--tools-no-update)
-        (set-process-sentinel
-         (start-process proc-name proc-buffer "go" "get" "-v" pkg)
-         (lambda (proc _)
-           (let ((status (process-exit-status proc)))
-             (if (= 0 status)
-                 (message "Installed %s" pkg)
-               (message "Failed to install %s: %d" pkg status))))))
-      (dolist (pkg go--tools)
-        (set-process-sentinel
-         (start-process proc-name proc-buffer "go" "get" "-u" "-v" pkg)
-         (lambda (proc _)
-           (let ((status (process-exit-status proc)))
-             (if (= 0 status)
-                 (message "Installed %s" pkg)
-               (message "Failed to install %s: %d" pkg status))))))))
-
-  (unless (executable-find "gopls")
-    (go-update-tools))
-
-    ;; Misc
-  ;; (use-package go-dlv)
-  (use-package go-fill-struct)
-  (use-package go-impl)
-
-  ;; Install: See https://github.com/golangci/golangci-lint#install
-  (use-package flycheck-golangci-lint
-    :if (executable-find "golangci-lint")
-    :after flycheck
-    :defines flycheck-disabled-checkers
-    :hook (go-mode . (lambda ()
-                       "Enable golangci-lint."
-                       (setq flycheck-disabled-checkers '(go-gofmt
-                                                          go-golint
-                                                          go-vet
-                                                          go-build
-                                                          go-test
-                                                          go-errcheck))
-                       (flycheck-golangci-lint-setup))))
-
-  (use-package go-tag
-    :bind (:map go-mode-map
-           ("C-c t t" . go-tag-add)
-           ("C-c t T" . go-tag-remove))
-    :init (setq go-tag-args (list "-transform" "camelcase")))
-
-  (use-package go-gen-test
-    :bind (:map go-mode-map
-           ("C-c t g" . go-gen-test-dwim)))
-
-  (use-package gotest
-    :bind (:map go-mode-map
-           ("C-c t a" . go-test-current-project)
-           ("C-c t m" . go-test-current-file)
-           ("C-c t ." . go-test-current-test)
-           ("C-c t x" . go-run))))
-
-(use-package go-mode
-  :mode "\\.go\\'"
-  :functions (go-package-gopkgs go-update-tools)
-  :bind (:map go-mode-map
-			  ("C-c R" . go-remove-unused-imports)
-			  ("<f1>" . godoc-at-point))
-  :config (xiu/go-config))
-
 ;; Haskell ---------------------------------------------------------------------
 
 (use-package haskell-mode
@@ -977,8 +486,7 @@
 
 ;; Hover -----------------------------------------------------------------------
 
-(use-package hover
-  :ensure t)
+
 
 ;;; init.el ends here
 
