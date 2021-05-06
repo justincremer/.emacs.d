@@ -13,8 +13,20 @@
 ;; Set garbage collection threshold for performance reasons
 (setq gc-cons-threshold (* 50 1000 1000))
 
-;; Make sure Windows doesn't wreck your char sets (thanks Bill)
-(set-default-coding-systems 'utf-8)
+(defun xiu/emacs-version-number ()
+  "Return a string representing the current version of Emacs."
+  (caddr (split-string (emacs-version))))
+
+;; Native comp obsolete function resolution
+(let ((temp-ver (xiu/emacs-version-number)) (temp-comp '28.0.00))
+  (if (or (string-greaterp temp-ver temp-comp)
+		  (equal temp-ver temp-comp))
+	  (define-advice define-obsolete-function-alias (:filter-args (ll) fix-obsolete)
+		(let ((obsolete-name (pop ll))
+			  (current-name (pop ll))
+			  (when (if ll (pop ll) "1"))
+			  (docstring (if ll (pop ll) nil)))
+		  (list obsolete-name current-name when docstring)))))
 
 ;; Package Management ----------------------------------------------------------
 
@@ -52,10 +64,6 @@
 
 (straight-use-package 'use-package)
 
-;; (lambda ()
-;;   (require 'straight-x))
-
-;; (add-to-list 'load-path "/home/xiuxiu/.emacs.d/straight/build/straight/")
 (require 'straight-x)
 
 ;; Backups ---------------------------------------------------------------------
@@ -93,45 +101,66 @@
 
 ;; Font ------------------------------------------------------------------------
 
+;; Make sure Windows doesn't wreck your char sets (thanks Bill)
+(set-default-coding-systems 'utf-8)
+
 (defvar default-font-size 120)
 
 (setq-default tab-width 4)
 
-(defun xiu/ligature-config ()
-  "Configuration for `ligature'."
-  (ligature-set-ligatures 't ("www"))
-  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
-  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
-                                       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
-                                       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
-                                       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
-                                       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
-                                       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
-                                       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
-                                       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
-                                       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
-                                       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
-                                       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
-                                       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
-                                       ))
-  (global-ligature-mode t))
+
 
 (set-face-attribute 'default nil
 					:font "Iosevka:regular:antialias=subpixel:hinting=true"
 					:height default-font-size)
 
-;; (use-package ligature
-;;   :ensure t
-;;   :straight t
-;;   :config (xiu/ligature-config))
+(use-package unicode-fonts
+  :ensure t
+  :custom (unicode-fonts-skip-font-groups '(low-quality-glyphs))
+  :config (unicode-fonts-setup))
+
+
 
 (use-package emojify
+  :ensure t
   :hook (erc-mode . emojify-mode)
   :commands emojify-mode)
 
-(use-package unicode-fonts
-  :custom (unicode-fonts-skip-font-groups '(low-quality-glyphs))
-  :config (unicode-fonts-setup))
+;; Not working in Emacs 28.0.50
+(use-package ligature
+  :disabled
+  :ensure t
+  :config (xiu/ligature-config))
+
+;; Assign ligation mapping
+(let ((alist `((?! . ,(regexp-opt '("!!" "!=" "!==")))
+               (?# . ,(regexp-opt '("##" "###" "####" "#(" "#?" "#[" "#_" "#_(" "#{")))
+               (?$ . ,(regexp-opt '("$>")))
+               (?% . ,(regexp-opt '("%%")))
+               (?& . ,(regexp-opt '("&&")))
+               (?* . ,(regexp-opt '("*" "**" "***" "**/" "*/" "*>")))
+               (?+ . ,(regexp-opt '("+" "++" "+++" "+>")))
+               (?- . ,(regexp-opt '("--" "---" "-->" "-<" "-<<" "->" "->>" "-}" "-~")))
+               (?. . ,(regexp-opt '(".-" ".." "..." "..<" ".=")))
+               (?/ . ,(regexp-opt '("/*" "/**" "//" "///" "/=" "/==" "/>")))
+               (?: . ,(regexp-opt '(":" "::" ":::" ":=")))
+               (?\; . ,(regexp-opt '(";;")))
+               (?< . ,(regexp-opt '("<!--" "<$" "<$>" "<*" "<*>" "<+" "<+>" "<-" "<--" "<->" "</" "</>" "<<" "<<-" "<<<" "<<=" "<=" "<=" "<=<" "<==" "<=>" "<>" "<|" "<|>" "<~" "<~~")))
+               (?= . ,(regexp-opt '("=/=" "=:=" "=<<" "==" "===" "==>" "=>" "=>>")))
+               (?> . ,(regexp-opt '(">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>")))
+               (?= . ,(regexp-opt '("?=")))
+               (?? . ,(regexp-opt '("??")))
+               (?\[ . ,(regexp-opt '("[]")))
+               (?\\ . ,(regexp-opt '("\\\\" "\\\\\\")))
+               (?^ . ,(regexp-opt '("^=")))
+               (?w . ,(regexp-opt '("www")))
+               (?x . ,(regexp-opt '("x")))
+               (?{ . ,(regexp-opt '("{-")))
+               (?| . ,(regexp-opt '("|=" "|>" "||" "||=")))
+               (?~ . ,(regexp-opt '("~-" "~=" "~>" "~@" "~~" "~~>"))))))
+  (dolist (char-regexp alist)
+    (set-char-table-range composition-function-table (car char-regexp)
+                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
 
 ;; Style -----------------------------------------------------------------------
 
@@ -221,9 +250,10 @@
    gcs-done))
 
 (defun xiu/dashboard-config ()
+  "Configuration for `dashboard'."
   "Configuration for startup `dashboard'."
   (dashboard-setup-startup-hook)
-  (setq dashboard-banner-logo-title "Welcome to Xiumacs")
+  (setq dashboard-banner-logo-title (format "Welcome to Emacs %s" (xiu/emacs-version-number)))
   (setq dashboard-init-info (xiu/load-time-message))
   ;; (setq dashboard-set-footer nil)
   (setq dashboard-set-heading-icons t)
@@ -238,6 +268,7 @@
 ;; (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
 
 (use-package dashboard
+  :after projectile
   :ensure t
   :config
   (progn
@@ -514,9 +545,9 @@
 ;; Projectile ------------------------------------------------------------------
 
 (defun xiu/switch-project ()
-  "Switch to a workspace with the project name and start `magit-status'."
+  "Switch to a workspace with the project name."
   (persp-switch (projectile-project-name))
-  (magit-status))
+  (projectile-find-file))
 
 (use-package projectile
   :diminish projectile-mode
