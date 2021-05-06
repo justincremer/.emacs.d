@@ -108,8 +108,6 @@
 
 (setq-default tab-width 4)
 
-
-
 (set-face-attribute 'default nil
 					:font "Iosevka:regular:antialias=subpixel:hinting=true"
 					:height default-font-size)
@@ -118,8 +116,6 @@
   :ensure t
   :custom (unicode-fonts-skip-font-groups '(low-quality-glyphs))
   :config (unicode-fonts-setup))
-
-
 
 (use-package emojify
   :ensure t
@@ -243,36 +239,40 @@
 
 (defun xiu/load-time-message ()
   "Return a string displaying the init time and garbage colletions."
-  (format "Emacs loaded in %s with %d garbage collections."
-   (format "%.2f seconds"
-		   (float-time
-			(time-subtract after-init-time before-init-time)))
-   gcs-done))
+  (format "Loaded in %s with %d garbage collections"
+		  (format "%.2f seconds"
+				  (float-time
+				   (time-subtract after-init-time before-init-time)))
+		  gcs-done))
 
 (defun xiu/dashboard-config ()
-  "Configuration for `dashboard'."
   "Configuration for startup `dashboard'."
   (dashboard-setup-startup-hook)
-  (setq dashboard-banner-logo-title (format "Welcome to Emacs %s" (xiu/emacs-version-number)))
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-banner-logo-title
+		(format "Welcome to Xiumacs %s" (xiu/emacs-version-number)))
   (setq dashboard-init-info (xiu/load-time-message))
-  ;; (setq dashboard-set-footer nil)
+  (setq dashboard-footer-icon
+		(all-the-icons-octicon "dashboard"
+							   :height 1.1
+							   :v-adjust -0.05
+							   :face 'font-lock-keyword-face))
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
-  (setq dashboard-modify-heading-icons '((recents . "file-text")
-										 (bookmarks . "book")))
   (setq dashboard-center-content t)
   (setq dashboard-show-shortcuts t)
   (setq dashboard-set-navigator t)
   (setq dashboard-items'((recents . 5)
-						 (projects . 20))))
+						 (projects . 20)
+						 (agenda . 5))))
+;; (setq dashboard-projects-switch-function 'projectile-persp-switch-project)
 ;; (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
 
 (use-package dashboard
   :after projectile
   :ensure t
   :config
-  (progn
-	(xiu/dashboard-config)))
+  (xiu/dashboard-config))
 
 ;; Workspaces ------------------------------------------------------------------
 
@@ -546,9 +546,9 @@
 
 (defun xiu/switch-project ()
   "Switch to a workspace with the project name."
-  (persp-switch (projectile-project-name))
-  (projectile-find-file))
-
+  (persp-switch (projectile-project-name)))
+  ;; (projectile-find-file))
+  
 (use-package projectile
   :diminish projectile-mode
   :config (projectile-mode)
@@ -761,67 +761,7 @@
                               auto-mode-alist))
 
 (use-package sly
-  ;; :mode "\\.lisp\\'"
-  )
-
-;; Typescript ------------------------------------------------------------------
-
-(defun xiu/set-js-indentation ()
-  "Set the default indentation width for newlines."
-  (setq js-indent-level 2)
-  (setq evil-shift-width js-indent-level)
-  (setq-default tab-width 2))
-
-(defun xiu/js2-config ()
-  "Set environment variables for js2-mode."
-  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
-  (setq js2-mode-show-strict-warnings nil)
-  (add-hook 'js2-mode-hook #'xiu/set-js-indentation)
-  (add-hook 'json-mode-hook #'xiu/set-js-indentation))
-
-(use-package nvm
-  :defer t)
-
-(use-package typescript-mode
-  :mode "\\.ts\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config (setq typescript-indent-level 2))
-
-(use-package js2-mode
-  :mode "\\.jsx?\\'"
-  :config
-  (xiu/js2-config))
-
-(use-package prettier-js
-  :hook ((js2-mode . prettier-js-mode)
-         (typescript-mode . prettier-js-mode))
-  :config
-  (setq prettier-js-show-errors nil))
-
-;; HTML ------------------------------------------------------------------------
-
-(use-package web-mode
-  :mode (("\\.jsx?\\'" . web-mode)
-		 ("\\.tsx?\\'" . web-mode)
-		 ("\\.html?\\'" . web-mode)
-		 ("\\.ejs\\'" . web-mode)
-		 ("\\.vue\\'" . web-mode)
-		 ("\\.svelte\\'" . web-mode)
-		 ("\\.json\\'" . web-mode))
-  :commands web-mode
-  :config
-  (setq-default web-mode-code-indent-offset 2)
-  (setq-default web-mode-markup-indent-offset 2)
-  (setq-default web-mode-attribute-indent-offset 2)
-  (setq web-mode-content-types-alist
-		'(("jsx" . "\\.js[x]?\\'"))))
-
-
-(use-package impatient-mode
-  :straight t)
-
-(use-package skewer-mode
-  :straight t)
+  :mode "\\.lisp\\'")
 
 ;; Markdown --------------------------------------------------------------------
 
@@ -845,14 +785,187 @@
   :ensure t
   :mode "\\.ya?ml\\'")
 
+(use-package json-mode
+  :ensure t
+  :mode "\\.json\\'")
+
+;; Docker ----------------------------------------------------------------------
+
+(use-package docker
+  :defer t)
+
+(use-package dockerfile-mode
+  :defer t)
+
+;; Web Mode ------------------------------------------------------------------------
+
+(use-package web-mode
+  :straight t
+  :mode (("\\.jsx?\\'" . web-mode)
+		 ("\\.tsx?\\'" . web-mode)
+		 ("\\.html?\\'" . web-mode)
+		 ("\\.ejs\\'" . web-mode)
+		 ("\\.vue\\'" . web-mode)
+		 ("\\.svelte\\'" . web-mode)
+		 ("\\.php\\'" . web-mode)
+		 ("\\.json\\'" . web-mode))
+  :commands web-mode
+  :custom-face
+  (css-selector ((t (:inherit default :foreground "#66CCFF"))))
+  (font-lock-comment-face ((t (:foreground "#828282"))))
+  :config
+  (setq-default web-mode-code-indent-offset 4)
+  (setq-default web-mode-markup-indent-offset 2)
+  (setq-default web-mode-attribute-indent-offset 2)
+  (setq web-mode-content-types-alist
+		'(("jsx" . "\\.js[x]?\\'")
+		  ("tsx" . "\\.ts[x]?\\'"))))
+
+(use-package impatient-mode
+  :straight t)
+
+(use-package skewer-mode
+  :straight t)
+
+;; Javascript -------------------------------------------------------
+
+(defun xiu/set-js-indentation ()
+  "Set the default indentation width for newlines."
+  (setq js-indent-level 4)
+  (setq evil-shift-width js-indent-level)
+  (setq-default tab-width 4))
+
+(defun xiu/js2-config ()
+  "Set environment variables for js2-mode."
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+  (setq js2-mode-show-strict-warnings nil)
+  (add-hook 'js2-mode-hook #'xiu/set-js-indentation)
+  (add-hook 'json-mode-hook #'xiu/set-js-indentation))
+
+(use-package js2-mode
+  :straight t
+  :mode "\\.jsx?\\'"
+  :config
+  (xiu/js2-config))
+
+;; Typescript ------------------------------------------------------------------
+
+(use-package typescript-mode
+  :straight t
+  :mode "\\.tsx?\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config (setq typescript-indent-level 2))
+
+(use-package prettier-js
+  :straight t
+  :hook ((js2-mode . prettier-js-mode)
+         (typescript-mode . prettier-js-mode))
+  :config
+  (setq prettier-js-show-errors nil))
+
+;; Emmet -----------------------------------------------------------------------
+
+(use-package emmet-mode
+  :hook ((web-mode . emmet-mode)
+         (css-mode . emmet-mode)))
+
 ;; Golang ----------------------------------------------------------------------
 
+(defun xiu/go-config ()
+  "Configuration for `go-mode'."
+  ;; Pull env vars
+  (with-eval-after-load 'exec-path-from-shell
+	(exec-path-from-shell-copy-envs '("GOPATH" "GO111MODULE" "GOPROXY")))
+
+  (defvar go--tools '("golang.org/x/tools/cmd/goimports"
+					  "github.com/go-delve/delve/cmd/dlv"
+					  "github.com/josharian/impl"
+					  "github.com/cweill/gotests/..."
+					  "github.com/fatih/gomodifytags"
+					  "github.com/davidrjenni/reftools/cmd/fillstruct")
+	"Necessary tools.")
+
+  (defvar go--tools-no-update '("goland.org/x/tools/gopls@latest")
+	"Necessary tools that must not be updated.")
+  
+  (defun go-update-tools ()
+	(interactive)
+	(unless (executable-find "go")
+	  (user-error "Unable to find `go' in `exec-path'!"))
+	(message "Installing go tools...")
+	(let ((proc-name "go-tools")
+          (proc-buffer "*Go Tools*"))
+      (dolist (pkg go--tools-no-update)
+        (set-process-sentinel
+         (start-process proc-name proc-buffer "go" "get" "-v" pkg)
+         (lambda (proc _)
+           (let ((status (process-exit-status proc)))
+             (if (= 0 status)
+                 (message "Installed %s" pkg)
+               (message "Failed to install %s: %d" pkg status))))))
+      (dolist (pkg go--tools)
+        (set-process-sentinel
+         (start-process proc-name proc-buffer "go" "get" "-u" "-v" pkg)
+         (lambda (proc _)
+           (let ((status (process-exit-status proc)))
+             (if (= 0 status)
+                 (message "Installed %s" pkg)
+               (message "Failed to install %s: %d" pkg status))))))))
+
+  (unless (executable-find "gopls")
+    (go-update-tools))
+
+    ;; Misc
+  ;; (use-package go-dlv)
+  (use-package go-fill-struct)
+  (use-package go-impl)
+
+  ;; Install: See https://github.com/golangci/golangci-lint#install
+  (use-package flycheck-golangci-lint
+    :if (executable-find "golangci-lint")
+    :after flycheck
+    :defines flycheck-disabled-checkers
+    :hook (go-mode . (lambda ()
+                       "Enable golangci-lint."
+                       (setq flycheck-disabled-checkers '(go-gofmt
+                                                          go-golint
+                                                          go-vet
+                                                          go-build
+                                                          go-test
+                                                          go-errcheck))
+                       (flycheck-golangci-lint-setup))))
+
+  (use-package go-tag
+    :bind (:map go-mode-map
+           ("C-c t t" . go-tag-add)
+           ("C-c t T" . go-tag-remove))
+    :init (setq go-tag-args (list "-transform" "camelcase")))
+
+  (use-package go-gen-test
+    :bind (:map go-mode-map
+           ("C-c t g" . go-gen-test-dwim)))
+
+  (use-package gotest
+    :bind (:map go-mode-map
+           ("C-c t a" . go-test-current-project)
+           ("C-c t m" . go-test-current-file)
+           ("C-c t ." . go-test-current-test)
+           ("C-c t x" . go-run))))
+
 (use-package go-mode
-  :ensure t)
+  :mode "\\.go\\'"
+  :functions (go-package-gopkgs go-update-tools)
+  :bind (:map go-mode-map
+			  ("C-c R" . go-remove-unused-imports)
+			  ("<f1>" . godoc-at-point))
+  :config (xiu/go-config))
 
 ;; Haskell ---------------------------------------------------------------------
 
 (use-package haskell-mode
+  :straight t
+  :ensure t
+  :mode "\\.hs\\'"
   :ensure t)
 
 ;; Yasnippet -------------------------------------------------------------------
