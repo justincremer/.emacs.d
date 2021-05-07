@@ -8,7 +8,6 @@
 ;;; Code:
 
 (use-package markdown-mode
-  :straight t
   :mode "\\.md\\'"
   :config
   (setq markdown-command "marked")

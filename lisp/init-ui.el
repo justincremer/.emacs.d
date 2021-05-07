@@ -28,9 +28,9 @@
 (setq use-dialog-box nil)
 (setq visible-bell t)
 (setq inhibit-startup-message t)
-
 (setq-default tab-width 4)
 (defvar default-font-size 120)
+
 (set-face-attribute 'default nil
 					:font "Iosevka:regular:antialias=subpixel:hinting=true"
 					:height default-font-size)
@@ -129,7 +129,6 @@
 		 js2-mode))
 
 (use-package apheleia
-  :straight t
   :config
   (apheleia-global-mode +1))
 
