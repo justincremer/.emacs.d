@@ -35,6 +35,10 @@
   (setq lsp-ui-doc-position 'bottom)
   (lsp-ui-doc-show))
 
+(use-package lsp-treemacs
+  :after (lsp treemacs)
+  :ensure t)
+
 (use-package flycheck
   :defer t
   :hook (lsp-mode . flycheck-mode))

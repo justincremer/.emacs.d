@@ -7,66 +7,12 @@
 
 ;;; Code:
 
+(require 'init-custom)
+
 ;; Font ------------------------------------------------------------------------
 
 ;; Make sure Windows doesn't wreck your char sets (thanks Bill)
 (set-default-coding-systems 'utf-8)
-
-(defvar default-font-size 120)
-
-(setq-default tab-width 4)
-
-(set-face-attribute 'default nil
-					:font "Iosevka:regular:antialias=subpixel:hinting=true"
-					:height default-font-size)
-
-(use-package unicode-fonts
-  :ensure t
-  :custom (unicode-fonts-skip-font-groups '(low-quality-glyphs))
-  :config (unicode-fonts-setup))
-
-(use-package emojify
-  :ensure t
-  :hook (erc-mode . emojify-mode)
-  :commands emojify-mode)
-
-;; Not working in Emacs 28.0.50
-(use-package ligature
-  :disabled
-  :ensure t
-  :config (xiu/ligature-config))
-
-;; Assign ligation mapping
-(let ((alist `((?! . ,(regexp-opt '("!!" "!=" "!==")))
-			   (?# . ,(regexp-opt '("##" "###" "####" "#(" "#?" "#[" "#_" "#_(" "#{")))
-			   (?$ . ,(regexp-opt '("$>")))
-			   (?% . ,(regexp-opt '("%%")))
-			   (?& . ,(regexp-opt '("&&")))
-			   (?* . ,(regexp-opt '("*" "**" "***" "**/" "*/" "*>")))
-			   (?+ . ,(regexp-opt '("+" "++" "+++" "+>")))
-			   (?- . ,(regexp-opt '("--" "---" "-->" "-<" "-<<" "->" "->>" "-}" "-~")))
-			   (?. . ,(regexp-opt '(".-" ".." "..." "..<" ".=")))
-			   (?/ . ,(regexp-opt '("/*" "/**" "//" "///" "/=" "/==" "/>")))
-			   (?: . ,(regexp-opt '(":" "::" ":::" ":=")))
-			   (?\; . ,(regexp-opt '(";;")))
-			   (?< . ,(regexp-opt '("<!--" "<$" "<$>" "<*" "<*>" "<+" "<+>" "<-" "<--" "<->" "</" "</>" "<<" "<<-" "<<<" "<<=" "<=" "<=" "<=<" "<==" "<=>" "<>" "<|" "<|>" "<~" "<~~")))
-			   (?= . ,(regexp-opt '("=/=" "=:=" "=<<" "==" "===" "==>" "=>" "=>>")))
-			   (?> . ,(regexp-opt '(">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>")))
-			   (?= . ,(regexp-opt '("?=")))
-			   (?? . ,(regexp-opt '("??")))
-			   (?\[ . ,(regexp-opt '("[]")))
-			   (?\\ . ,(regexp-opt '("\\\\" "\\\\\\")))
-			   (?^ . ,(regexp-opt '("^=")))
-			   (?w . ,(regexp-opt '("www")))
-			   (?x . ,(regexp-opt '("x")))
-			   (?{ . ,(regexp-opt '("{-")))
-			   (?| . ,(regexp-opt '("|=" "|>" "||" "||=")))
-			   (?~ . ,(regexp-opt '("~-" "~=" "~>" "~@" "~~" "~~>"))))))
-  (dolist (char-regexp alist)
-	(set-char-table-range composition-function-table (car char-regexp)
-						  `([,(cdr char-regexp) 0 font-shape-gstring]))))
-
-;; Style -----------------------------------------------------------------------
 
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
@@ -83,12 +29,74 @@
 (setq visible-bell t)
 (setq inhibit-startup-message t)
 
+(setq-default tab-width 4)
+(defvar default-font-size 120)
+(set-face-attribute 'default nil
+					:font "Iosevka:regular:antialias=subpixel:hinting=true"
+					:height default-font-size)
+
 (dolist (mode '(org-mode-hook
 				shell-mode-hook
 				eshell-mode-hook
 				term-mode-hook
 				treemacs-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+(use-package unicode-fonts
+  :ensure t
+  :custom (unicode-fonts-skip-font-groups '(low-quality-glyphs))
+  :config (unicode-fonts-setup))
+
+(use-package composite
+  :ensure nil
+  :unless xiu/prettify-symbols-alist
+  :init (defvar composition-ligature-table (make-char-table nil))
+  :hook (((prog-mode conf-mode nxml-mode markdown-mode help-mode)
+		  . (lambda () (setq-local composition-function-table composition-ligature-table))))
+  :config
+  ;; support ligatures, some toned down to prevent hang
+  (when emacs/>=27p
+	(let ((alist
+		   '((33 . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
+			 (35 . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
+			 (36 . ".\\(?:\\(>\\)>?\\)")
+			 (37 . ".\\(?:\\(%\\)%?\\)")
+			 (38 . ".\\(?:\\(&\\)&?\\)")
+			 (42 . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
+			 ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
+			 (43 . ".\\(?:\\([>]\\)>?\\)")
+			 ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
+			 (45 . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
+			 ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
+			 (46 . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
+			 (47 . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
+			 ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
+			 (48 . ".\\(?:x[a-zA-Z]\\)")
+			 (58 . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
+			 (59 . ".\\(?:\\(;\\);?\\)")
+			 (60 . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
+			 (61 . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
+			 (62 . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
+			 (63 . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
+			 (91 . ".\\(?:\\(|\\)[]|]?\\)")
+			 ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
+			 (94 . ".\\(?:\\(=\\)=?\\)")
+			 (95 . ".\\(?:\\(|_\\|[_]\\)_?\\)")
+			 (119 . ".\\(?:\\(ww\\)w?\\)")
+			 (123 . ".\\(?:\\(|\\)[|}]?\\)")
+			 (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
+			 (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
+	  (dolist (char-regexp alist)
+		(set-char-table-range composition-ligature-table (car char-regexp)
+							  `([,(cdr char-regexp) 0 font-shape-gstring]))))
+	(set-char-table-parent composition-ligature-table composition-function-table)))
+
+(use-package emojify
+  :ensure t
+  :hook (erc-mode . emojify-mode)
+  :commands emojify-mode)
+
+(use-package all-the-icons)
 
 (use-package smartparens
   :hook (prog-mode . smartparens-mode))
@@ -97,8 +105,6 @@
   :config
   (set-face-attribute 'show-paren-match-expression nil :background "#363e4a")
   (show-paren-mode 1))
-
-(use-package all-the-icons)
 
 (use-package doom-themes
   :init (load-theme 'doom-Iosvkem t))

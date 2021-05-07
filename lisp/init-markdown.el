@@ -27,10 +27,6 @@
   :ensure t
   :mode "\\.ya?ml\\'")
 
-(use-package json-mode
-  :ensure t
-  :mode "\\.json\\'")
-
 (provide 'init-markdown)
 
 ;;; init-markdown.el ends here

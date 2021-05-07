@@ -63,7 +63,7 @@
 	(go-update-tools))
 
   ;; Misc
-  (use-package go-dlv)
+  ;; (use-package go-dlv)
   (use-package go-fill-struct)
   (use-package go-impl)
 
