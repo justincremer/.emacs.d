@@ -10,7 +10,6 @@
 (defun xiu/switch-project ()
   "Switch to a workspace with the project name."
   (persp-switch (projectile-project-name)))
-;; (projectile-find-file))
 
 (use-package projectile
   :diminish projectile-mode
