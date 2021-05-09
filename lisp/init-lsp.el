@@ -8,7 +8,6 @@
 ;;; Code:
 
 (use-package lsp-mode
-  :straight t
   :commands lsp
   :hook ((typescript-mode js2-mode web-mode) . lsp)
   :bind (:map lsp-mode-map
@@ -27,7 +26,6 @@
   "lX" 'lsp-execute-code-action)
 
 (use-package lsp-ui
-  :straight t
   :hook (lsp-mode . lsp-ui-mode)
   :config
   (setq lsp-ui-sideline-enable t)

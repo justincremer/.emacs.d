@@ -8,7 +8,6 @@
 ;;; Code:
 
 (use-package haskell-mode
-  :straight t
   :ensure t
   :mode "\\.hs\\'"
   :ensure t)

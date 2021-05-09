@@ -8,7 +8,6 @@
 ;;; Code:
 
 (use-package dap-mode
-  :straight t
   :custom
   (lsp-enable-dap-auto-configure nil)
   :config
