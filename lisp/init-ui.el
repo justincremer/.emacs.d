@@ -129,6 +129,7 @@
 		 js2-mode))
 
 (use-package apheleia
+  :disabled
   :config
   (apheleia-global-mode +1))
 
