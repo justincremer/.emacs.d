@@ -1,7 +1,7 @@
-;;; early-init.el --- Compiler and elisp configurations.  -*- lexical-binding: t -*-
-;;; commentary:
+;;; early-init.el --- Compiler and load path configurations.  -*- lexical-binding: t -*-
+;;; Commentary:
 
-;;; code:
+;;; Code:
 
 ;; Garbage Collector configuration
 (defvar xiu/gc-cons-threshold (if (display-graphic-p) 64000000 1600000))
@@ -52,6 +52,23 @@
 (setq byte-compile-warnings '(cl-functions))
 
 (setq gc-cons-threshold most-positive-fixnum)
+
+;; Load path
+
+(defun update-load-path (&rest _)
+  "Update `load-path'."
+  (dolist (dir '("site-lisp" "elisp"))
+    (push (expand-file-name dir user-emacs-directory) load-path)))
+
+(defun add-subdirs-to-load-path (&rest _)
+  "Add subdirectories to `load-path'."
+  (let ((default-directory (expand-file-name "site-lisp" user-emacs-directory)))
+    (normal-top-level-add-subdirs-to-load-path)))
+
+(advice-add #'package-initialize :after #'update-load-path)
+(advice-add #'package-initialize :after #'add-subdirs-to-load-path)
+
+(update-load-path)
 
 ;; Package initialize occurs automatically, before `user-init-file' is
 ;; loaded, but after `early-init-file'. We handle package
