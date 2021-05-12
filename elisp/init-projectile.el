@@ -18,8 +18,8 @@
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  (when (file-directory-p "~/Development")
-	(setq projectile-project-search-path '("~/Development")))
+  (when (file-directory-p "~/development")
+	(setq projectile-project-search-path '("~/development")))
   (setq projectile-switch-project-action #'xiu/switch-project))
 
 (use-package counsel-projectile

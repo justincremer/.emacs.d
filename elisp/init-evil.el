@@ -27,7 +27,7 @@
   (message "arrow keys make fingers go brrrrrr"))
 
 (use-package evil
-  :disabled
+  ;; :disabled
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
@@ -53,7 +53,7 @@
   (evil-set-initial-state 'dashboard-mode 'normal))
 
 (use-package evil-collection
-  :disabled
+  ;; :disabled
   :after evil
   :init
   (setq evil-collection-company-use-tng nil)

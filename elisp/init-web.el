@@ -60,7 +60,7 @@
   :config (use-package impatient-mode))
 
 (use-package typescript-mode
-  :mode ("\\.tsx?\'" . typescript-mode))
+  :mode ("\\.ts[x]\'" . typescript-mode))
 
 (use-package mocha
   :after (js2-mode typescript-mode)
