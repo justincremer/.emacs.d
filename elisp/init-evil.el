@@ -14,11 +14,7 @@
 				  eshell-mode
 				  term-mode
 				  git-rebase-mode
-				  erc--mode
-				  circe-server-mode
-				  circe-chat-mode
-				  circe-query-mode
-				  sauron-mode))
+				  erc--mode))
 	(add-to-list 'evil-emacs-state-modes mode)))
 
 (defun xiu/dont-use-arrows ()
@@ -27,7 +23,7 @@
   (message "arrow keys make fingers go brrrrrr"))
 
 (use-package evil
-  ;; :disabled
+  :disabled
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
@@ -53,7 +49,7 @@
   (evil-set-initial-state 'dashboard-mode 'normal))
 
 (use-package evil-collection
-  ;; :disabled
+  :disabled
   :after evil
   :init
   (setq evil-collection-company-use-tng nil)

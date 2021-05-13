@@ -23,6 +23,7 @@
 (require 'init-perspective)
 (require 'init-general)
 (require 'init-treemacs)
+(require 'init-tabs)
 (require 'init-ivy)
 (require 'init-yasnippet)
 (require 'init-evil)
