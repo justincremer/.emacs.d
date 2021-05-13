@@ -22,29 +22,26 @@
 (defun xiu/dashboard-config ()
   "Configuration for startup `dashboard'."
   (dashboard-setup-startup-hook)
-  (setq dashboard-startup-banner 'logo)
-  (setq dashboard-banner-logo-title
-		(format "Welcome to Xiumacs %s" (xiu/emacs-version-number)))
-  (setq dashboard-init-info (xiu/load-time-message))
-  (setq dashboard-footer-icon
-		(all-the-icons-octicon "dashboard"
-							   :height 1.1
-							   :v-adjust -0.05
-							   :face 'font-lock-keyword-face))
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-center-content t)
-  (setq dashboard-show-shortcuts t)
-  (setq dashboard-set-navigator t)
-  (setq dashboard-items'((bookmarks . 5)
-						 (recents . 5)
-						 (projects . 20)
-						 (agenda . 5))))
-;; (setq dashboard-projects-switch-function 'projectile-persp-switch-project)
-;; (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
+  (setq dashboard-set-heading-icons t
+		dashboard-set-file-icons t
+		dashboard-center-content t
+		dashboard-show-shortcuts t
+		dashboard-set-navigator t
+		dashboard-startup-banner 'logo
+		dashboard-banner-logo-titlfe (format "Welcome to Xiumacs %s" (xiu/emacs-version-number))
+		dashboard-init-info (xiu/load-time-message)
+		dashboard-items '((bookmarks . 5)
+						  (recents . 5)
+						  (agenda . 5)
+						  (projects . 15))
+		dashboard-footer-icon (all-the-icons-octicon "dashboard"
+													 :height 1.1
+													 :v-adjust -0.05
+													 :face 'font-lock-keyword-face)
+		initial-buffer-choice (lambda () (get-buffer "*dashboard*"))))
 
 (use-package dashboard
-  :after projectile
+  :after (projectile)
   :ensure t
   :config
   (xiu/dashboard-config))

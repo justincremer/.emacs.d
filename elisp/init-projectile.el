@@ -7,7 +7,7 @@
 
 ;;; Code:
 
-(defun xiu/switch-project ()
+(defun xiu/switch-project-hook ()
   "Switch to a workspace with the project name."
   (persp-switch (projectile-project-name)))
 
@@ -20,7 +20,7 @@
   :init
   (when (file-directory-p "~/development")
 	(setq projectile-project-search-path '("~/development")))
-  (setq projectile-switch-project-action #'xiu/switch-project))
+  (setq projectile-switch-project-action #'xiu/switch-project-hook))
 
 (use-package counsel-projectile
   :after projectile

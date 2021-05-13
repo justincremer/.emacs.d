@@ -8,7 +8,7 @@
 ;;; Code:
 
 (defun xiu/evil-hook ()
-  "Determines which modes evade evil-mode."
+  "Determines which modes evade `evil-mode'."
   (dolist (mode '(custom-mode
 				  shell-mode
 				  eshell-mode
@@ -32,7 +32,7 @@
   (setq evil-respect-visual-line-mode t)
   :config
   (add-hook 'evil-mode-hook 'xiu/evil-hook)
-  (evil-mode 1)
+  (evil-mode t)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)

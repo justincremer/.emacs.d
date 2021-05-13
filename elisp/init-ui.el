@@ -31,9 +31,19 @@
 (setq-default tab-width 4)
 (defvar default-font-size 120)
 
-(set-face-attribute 'default nil
-					:font "Iosevka:regular:antialias=subpixel:hinting=true"
-					:height default-font-size)
+(defun xiu/set-font-faces ()
+  "Set font faces."
+  (message "Setting faces")
+  (set-face-attribute 'default nil
+					  :font "Iosevka:regular:antialias=subpixel:hinting=true"
+					  :height default-font-size))
+
+(if (daemonp)
+	(add-hook 'after-make-frame-functions
+			  (lambda (frame)
+				(with-selected-frame frame
+				  (xiu/set-font-faces))))
+  (xiu/set-font-faces))
 
 (dolist (mode '(org-mode-hook
 				shell-mode-hook
