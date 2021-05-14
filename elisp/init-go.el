@@ -10,26 +10,18 @@
 (use-package go-mode
   :functions (go-packages-gopkgs go-update-tools)
   :bind (:map go-mode-map
-		 ("C-c R" . go-remove-unused-imports)
-		 ("<f1>" . godoc-at-point))
+			  ("C-c R" . go-remove-unused-imports)
+			  ("<f1>" . godoc-at-point))
   :config
-  ;; Env vars
   (with-eval-after-load 'exec-path-from-shell
 	(exec-path-from-shell-copy-envs '("GOPATH" "GO111MODULE" "GOPROXY")))
-
-  ;; Install or update tools
+  (defvar go--tools-no-update '("golang.org/x/tools/gopls@latest"))
   (defvar go--tools '("golang.org/x/tools/cmd/goimports"
 					  "github.com/go-delve/delve/cmd/dlv"
 					  "github.com/josharian/impl"
 					  "github.com/cweill/gotests/..."
 					  "github.com/fatih/gomodifytags"
-					  "github.com/davidrjenni/reftools/cmd/fillstruct")
-	"All necessary go tools.")
-
-  ;; Do not use the -u flag for gopls, as it will update the dependencies to incompatible versions
-  ;; https://github.com/golang/tools/blob/master/gopls/doc/user.md#installation
-  (defvar go--tools-no-update '("golang.org/x/tools/gopls@latest")
-	"All necessary go tools without update the dependencies.")
+					  "github.com/davidrjenni/reftools/cmd/fillstruct"))
 
   (defun go-update-tools ()
 	"Install or update go tools."
@@ -58,16 +50,12 @@
 				 (message "Installed %s" pkg)
 			   (message "Failed to install %s: %d" pkg status))))))))
 
-  ;; Try to install go tools if `gopls' is not found
   (unless (executable-find "gopls")
 	(go-update-tools))
 
-  ;; Misc
-  ;; (use-package go-dlv)
   (use-package go-fill-struct)
   (use-package go-impl)
 
-  ;; Install: See https://github.com/golangci/golangci-lint#install
   (use-package flycheck-golangci-lint
 	:if (executable-find "golangci-lint")
 	:after flycheck

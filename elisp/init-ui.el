@@ -9,11 +9,6 @@
 
 (require 'init-custom)
 
-;; Font ------------------------------------------------------------------------
-
-;; Make sure Windows doesn't wreck your char sets (thanks Bill)
-(set-default-coding-systems 'utf-8)
-
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 (menu-bar-mode -1)
@@ -21,13 +16,17 @@
 (set-fringe-mode 10)
 (column-number-mode)
 (global-display-line-numbers-mode t)
-(setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
-(setq mouse-wheel-progressive-speed nil)
-(setq mouse-wheel-follow-mouse 't)
-(setq scroll-step 1)
-(setq use-dialog-box nil)
-(setq visible-bell t)
-(setq inhibit-startup-message t)
+;; Make sure Windows doesn't wreck your char sets (thanks Bill)
+(set-default-coding-systems 'utf-8)
+
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))
+	  mouse-wheel-progressive-speed nil
+	  mouse-wheel-follow-mouse 't
+	  scroll-step 1
+	  use-dialog-box nil
+	  visible-bell t
+	  inhibit-startup-message t)
+
 (setq-default tab-width 4)
 (defvar default-font-size 120)
 
@@ -121,10 +120,23 @@
 ;; :init (load-theme 'doom-dark+ t))
 ;; :init (load-theme 'doom-acario-dark t))
 
+(use-package minions
+  :hook (doom-modeline-mode . minions-mode))
+
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom (doom-modeline-height 15))
+  :custom
+  (doom-modeline-height 15)
+  (doom-modeline-bar-width 6)
+  (doom-modeline-lsp t)
+  (doom-modeline-github nil)
+  (doom-modeline-mu4e nil)
+  (doom-modeline-irc nil)
+  (doom-modeline-minor-modes t)
+  (doom-modeline-persp-name nil)
+  (doom-modeline-buffer-file-name-style 'truncate-except-project)
+  (doom-modeline-major-mode-icon nil))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))

@@ -8,11 +8,20 @@
 ;;; Code:
 
 (use-package lsp-mode
+  :ensure t
   :commands lsp
-  :hook ((typescript-mode js2-mode web-mode) . lsp)
+  :hook ((typescript-mode js2-mode web-mode go-mode haskell-mode) . lsp)
   :bind (:map lsp-mode-map
 			  ("TAB" . completion-at-point))
   :custom (lsp-headerline-breadcrumb-enable t))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-sideline-show-hover nil)
+  (setq lsp-ui-doc-position 'bottom)
+  (lsp-ui-doc-show))
 
 (xiu/leader-key-def
   "l"  '(:ignore t :which-key "lsp")
@@ -25,15 +34,8 @@
   "lS" 'lsp-ui-sideline-mode
   "lX" 'lsp-execute-code-action)
 
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :config
-  (setq lsp-ui-sideline-enable t)
-  (setq lsp-ui-sideline-show-hover nil)
-  (setq lsp-ui-doc-position 'bottom)
-  (lsp-ui-doc-show))
-
 (use-package lsp-treemacs
+  :disabled
   :after (lsp treemacs)
   :ensure t)
 
@@ -42,6 +44,7 @@
   :hook (lsp-mode . flycheck-mode))
 
 (use-package hover
+  :after (lsp-mode lsp-ui)
   :ensure t)
 
 (provide 'init-lsp)

@@ -31,9 +31,9 @@
 		dashboard-banner-logo-titlfe (format "Welcome to Xiumacs %s" (xiu/emacs-version-number))
 		dashboard-init-info (xiu/load-time-message)
 		dashboard-items '((bookmarks . 5)
-						  (recents . 5)
 						  (agenda . 5)
-						  (projects . 15))
+						  (recents . 5)
+						  (projects . 10))
 		dashboard-footer-icon (all-the-icons-octicon "dashboard"
 													 :height 1.1
 													 :v-adjust -0.05
