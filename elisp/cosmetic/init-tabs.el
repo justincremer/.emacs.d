@@ -22,7 +22,9 @@
   :ensure t
   :init (centaur-tabs-mode t)
   :bind (("C-<tab>" . centaur-tabs-forward-tab)
-		 ("C-<iso-lefttab>" . centaur-tabs-backward-tab))
+		 ("M-<tab>" . centaur-tabs-forward-group)
+		 ("C-<iso-lefttab>" . centaur-tabs-backward-tab)
+		 ("M-<iso-lefttab>" . centaur-tabs-backward-group))
   :hook
   (projectile-mode . centaur-tabs-mode)
   (dashboard-mode . centaur-tabs-local-mode)

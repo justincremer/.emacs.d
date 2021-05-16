@@ -36,7 +36,7 @@
 
 (use-package lsp-treemacs
   :disabled
-  :after (lsp treemacs)
+  :after (lsp-mode treemacs)
   :ensure t)
 
 (use-package flycheck

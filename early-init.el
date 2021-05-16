@@ -5,21 +5,18 @@
 
 ;; Garbage Collector configuration
 (defvar xiu/gc-cons-threshold (if (display-graphic-p) 64000000 1600000))
-
 (defvar xiu/gc-cons-upper-limit (if (display-graphic-p) 512000000 128000000))
-
 (defvar xiu/gc-timer (run-with-idle-timer 10 t #'garbage-collect))
-
 (defvar default-file-name-handler-alist file-name-handler-alist)
 
-(setq file-name-handler-alist nil)
-(setq gc-cons-threshold xiu/gc-cons-upper-limit
+(setq file-name-handler-alist nil
+	  gc-cons-threshold xiu/gc-cons-upper-limit
       gc-cons-percentage 0.5)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq file-name-handler-alist default-file-name-handler-alist)
-            (setq gc-cons-threshold xiu/gc-cons-threshold
+            (setq file-name-handler-alist default-file-name-handler-alist
+				  gc-cons-threshold xiu/gc-cons-threshold
                   gc-cons-percentage 0.1)
 
             (if (boundp 'after-focus-change-function)
@@ -49,26 +46,29 @@
 		  (docstring (if ll (pop ll) nil)))
 	  (list obsolete-name current-name when docstring))))
 
-(setq byte-compile-warnings '(cl-functions))
-
-(setq gc-cons-threshold most-positive-fixnum)
+(setq byte-compile-warnings '(cl-functions)
+	  gc-cons-threshold most-positive-fixnum)
 
 ;; Load path
 
-(defun update-load-path (&rest _)
-  "Update `load-path'."
-  (dolist (dir '("site-lisp" "elisp"))
-    (push (expand-file-name dir user-emacs-directory) load-path)))
+;; This is inelegant and should be fixed sooner rather than later
+(let ((default-directory "~/.config/emacs/elisp/"))
+  (normal-top-level-add-subdirs-to-load-path))
 
-(defun add-subdirs-to-load-path (&rest _)
-  "Add subdirectories to `load-path'."
-  (let ((default-directory (expand-file-name "site-lisp" user-emacs-directory)))
-    (normal-top-level-add-subdirs-to-load-path)))
+;; (defun update-load-path (&rest _)
+  ;; "Update `load-path'."
+;;   (dolist (dir '("site-lisp" "elisp"))
+;;     (push (expand-file-name dir user-emacs-directory) load-path)))
 
-(advice-add #'package-initialize :after #'update-load-path)
-(advice-add #'package-initialize :after #'add-subdirs-to-load-path)
+;; (defun add-subdirs-to-load-path (&rest _)
+;;   "Add subdirectories to `load-path'."
+;;   (let ((default-directory (expand-file-name "site-lisp" user-emacs-directory)))
+;;     (normal-top-level-add-subdirs-to-load-path)))
 
-(update-load-path)
+;; (advice-add #'package-initialize :after #'update-load-path)
+;; (advice-add #'package-initialize :after #'add-subdirs-to-load-path)
+
+;; (update-load-path)
 
 ;; Package initialize occurs automatically, before `user-init-file' is
 ;; loaded, but after `early-init-file'. We handle package
