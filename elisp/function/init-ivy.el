@@ -97,6 +97,7 @@
 (use-package ripgrep)
 
 (use-package ivy-posframe
+  :disabled
   :custom
   (ivy-posframe-width      115)
   (ivy-posframe-min-width  115)

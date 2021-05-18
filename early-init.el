@@ -51,7 +51,7 @@
 
 ;; Load path
 
-;; This is inelegant and should be fixed sooner rather than later
+;; This is not agnostic and should be fixed sooner rather than later
 (let ((default-directory "~/.config/emacs/elisp/"))
   (normal-top-level-add-subdirs-to-load-path))
 

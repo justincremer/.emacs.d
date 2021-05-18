@@ -31,6 +31,16 @@
 		(expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
 (load custom-file t)
 
+;; (when (daemonp)
+;;   (setq exec-path (append exec-path '("/usr/local/go/bin")))) 
+
+;; (use-package exec-path-from-shell
+;;   :defer t
+;;   :config
+;;   (setq exec-path-from-shell-arguments nil)
+;;   (when (daemonp)
+;; 	(exec-path-from-shell-initialize))
+
 (use-package super-save
   :defer 1
   :diminish super-save-mode

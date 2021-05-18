@@ -7,7 +7,20 @@
 
 ;;; Code:
 
-(defun xiu/go-update-tools (go--tools-no-update go--tools-update)
+;; (defconst xiu/go--root-path "/usr/local/go/bin")
+(defconst xiu/go--tools-no-update
+  '("golang.org/x/tools/gopls@latest"))
+(defconst xiu/go--tools-update
+  '("golang.org/x/tools/cmd/goimports"
+	"golang.org/x/tools/cmd/godoc"
+	"github.com/rogpeppe/godef"
+	"github.com/josharian/impl"
+	"github.com/cweill/gotests/..."
+	"github.com/fatih/gomodifytags"
+	"github.com/go-delve/delve/cmd/dlv"
+	"github.com/davidrjenni/reftools/cmd/fillstruct"))
+
+(defun xiu/go-update-tools (no-update-list update-list)
   "Install or update `go' dev tools."
   (interactive)
   (unless (executable-find "go")
@@ -15,7 +28,7 @@
   (message "Installing go tools...")
   (let ((proc-name "go-tools")
 		(proc-buffer "*Go Tools*"))
-	(dolist (pkg go--tools-no-update)
+	(dolist (pkg no-update-list)
 	  (set-process-sentinel
 	   (start-process proc-name proc-buffer "go" "get" "-v" pkg)
 	   (lambda (proc _)
@@ -23,7 +36,7 @@
 		   (if (= 0 status)
 			   (message "Installed %s" pkg)
 			 (message "Failed to install %s: %d" pkg status))))))
-	(dolist (pkg go--tools-update)
+	(dolist (pkg update-list)
 	  (set-process-sentinel
 	   (start-process proc-name proc-buffer "go" "get" "-u" "-v" pkg)
 	   (lambda (proc _)
@@ -36,17 +49,16 @@
   (with-eval-after-load 'exec-path-from-shell
 	(exec-path-from-shell-copy-envs '("GOPATH" "GO111MODULE" "GOPROXY")))
 
-  (defvar go--tools-no-update '("golang.org/x/tools/gopls@latest"))
-  (defvar go--tools-update '("golang.org/x/tools/cmd/goimports"))
+  ;; (unless (member xiu/go--root-path load-path)
+	;; (add-to-list 'load-path xiu/go--root-path))
 
   (unless (executable-find "gopls")
-	(xiu/go-update-tools go--tools-no-update go--tools-update))
+	(xiu/go-update-tools xiu/go--tools-no-update xiu/go--tools-update))
 
-  (use-package go-fill-struct :disabled)
-  (use-package go-impl :disabled)
+  (use-package go-fill-struct)
+  (use-package go-impl)
 
   (use-package flycheck-golangci-lint
-	:disabled
 	:if (executable-find "golangci-lint")
 	:after flycheck
 	:defines flycheck-disabled-checkers
@@ -61,24 +73,23 @@
 					   (flycheck-golangci-lint-setup))))
 
   (use-package go-tag
-	:disabled
 	:bind (:map go-mode-map
 				("C-c t t" . go-tag-add)
 				("C-c t T" . go-tag-remove))
 	:init (setq go-tag-args (list "-transform" "camelcase")))
 
   (use-package go-gen-test
-	:disabled
 	:bind (:map go-mode-map
 				("C-c t g" . go-gen-test-dwim)))
 
   (use-package gotest
-	:disabled
 	:bind (:map go-mode-map
-		   ("C-c t a" . go-test-current-project)
-		   ("C-c t m" . go-test-current-file)
-		   ("C-c t ." . go-test-current-test)
-		   ("C-c t x" . go-run))))
+				("C-c t a" . go-test-current-project)
+				("C-c t m" . go-test-current-file)
+				("C-c t ." . go-test-current-test)
+				("C-c t x" . go-run)))
+
+  (add-hook 'before-save-hook 'gofmt-before-save))
 
 (use-package go-mode
   :functions (go-packages-gopkgs go-update-tools)
@@ -88,7 +99,6 @@
   :config (xiu/go-mode-config))
 
 (use-package go-playground
-  :disabled
   :diminish
   :commands (go-playground-mode))
 

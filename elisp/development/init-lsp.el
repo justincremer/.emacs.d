@@ -18,10 +18,10 @@
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :config
-  (setq lsp-ui-sideline-enable t)
-  (setq lsp-ui-sideline-show-hover nil)
-  (setq lsp-ui-doc-position 'bottom)
-  (lsp-ui-doc-show))
+  ;; (lsp-ui-doc-show)
+  (setq lsp-ui-sideline-enable t
+		lsp-ui-sideline-show-hover nil
+		lsp-ui-doc-position 'bottom))
 
 (xiu/leader-key-def
   "l"  '(:ignore t :which-key "lsp")

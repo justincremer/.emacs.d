@@ -9,6 +9,10 @@
 
 (add-hook 'emacs-lisp-mode-hook #'flycheck-mode)
 
+
+;; (use-package elisp-format
+;;   :ensure t)
+
 (use-package helpful
   :custom
   (counsel-describe-function-function #'helpful-callable)

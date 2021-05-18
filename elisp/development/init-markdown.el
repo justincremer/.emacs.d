@@ -8,6 +8,7 @@
 ;;; Code:
 
 (use-package markdown-mode
+  :ensure t
   :mode "\\.md\\'"
   :config
   (setq markdown-command "marked")
@@ -22,9 +23,15 @@
 	(xiu/set-markdown-header-font-sizes))
   (add-hook 'xiu/markdown-mode-hook 'xiu/markdown-mode-hook))
 
+(use-package json-mode
+  :ensure t)
+
 (use-package yaml-mode
   :ensure t
   :mode "\\.ya?ml\\'")
+
+(use-package toml-mode
+  :ensure t)
 
 (provide 'init-markdown)
 
