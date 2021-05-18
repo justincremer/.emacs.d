@@ -25,6 +25,7 @@
 (require 'init-treemacs)
 (require 'init-tabs)
 (require 'init-ivy)
+(require 'init-vertico)
 (require 'init-yasnippet)
 (require 'init-evil)
 
