@@ -1,4 +1,4 @@
-;; init-basic.el --- Initialize basic configurations.      -*- lexical-binding: t -*-
+;;; init-basic.el --- Initialize basic configurations.      -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;;

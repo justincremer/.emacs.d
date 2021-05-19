@@ -1,0 +1,18 @@
+alias .. cd ..
+alias ... cd ../..
+alias ..3 cd ../../..
+alias ..4 cd ../../../..
+alias ..5 cd ../../../../..
+
+alias l exa
+alias ls exa
+alias ll exa -l --git
+alias la exa -a
+alias lh exa -lh --git
+alias lla exa -la --git
+alias lah exa -lah --git
+
+alias cat bat
+alias find fd
+alias top gt
+

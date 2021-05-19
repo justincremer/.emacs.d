@@ -1,4 +1,4 @@
-;;; init.el --- Start this puppy up      -*- lexical-binding: t no-byte-compile: t-*-
+;;; init.el --- Start this puppy up    -*- lexical-binding: t    no-byte-compile: t -*-
 
 ;; -----------------------------------------------------------------------------
 ;; ----------------------- XIUMACS --- by: Justin cremer -----------------------
