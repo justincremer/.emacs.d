@@ -63,9 +63,9 @@
   (css-selector ((t (:inherit default :foreground "#66CCFF"))))
   (font-lock-comment-face ((t (:foreground "#828282"))))
   :config
-  (setq web-mode-markup-indent-offset 4)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 4))
+  (setq web-mode-markup-indent-offset 4
+		web-mode-css-indent-offset 2
+		web-mode-code-indent-offset 4))
 
 (use-package rjsx-mode
   :after (js2-mode)
@@ -79,16 +79,13 @@
 
 (use-package jest
   :after (js2-mode typescript-mode)
-  :hook ((js2-mode typescript-mode)
-		 . jest-minor-mode))
+  :hook ((js2-mode typescript-mode) . jest-minor-mode))
 
-;; Format HTML, CSS and JavaScript/JSON
 ;; Install: npm -g install prettier
 (use-package prettier-js
   :diminish
-  :hook ((js-mode typescript-mode js2-mode rjsx-mode  json-mode web-mode css-mode scss-mode html-mode)
-		 .
-		 prettier-js-mode))
+  :hook ((js-mode typescript-mode js2-mode rjsx-mode json-mode web-mode
+				  css-mode scss-mode html-mode) . prettier-js-mode))
 
 ;; (use-package emmet-mode
 ;;   :hook ((web-mode . emmet-mode)

@@ -1,13 +1,8 @@
-;;; init.el --- Start this puppy up      -*- lexical-binding: t no-byte-compile: t-*-
-
-;; -----------------------------------------------------------------------------
-;; ----------------------- XIUMACS --- by: Justin cremer -----------------------
-;; ------------------ https://github.com/justincremer/.emacs.d -----------------
-;; -----------------------------------------------------------------------------
+;;; init-env.el --- Initialize environment        -*- lexical-binding: t no-byte-compile: t-*-
 
 ;;; Commentary:
 ;;
-;; Turns words into syscalls
+;; Initialize environment
 ;;
 
 ;;; Code:
@@ -44,6 +39,6 @@
 (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
 	  url-history-file (expand-file-name "url/history" user-emacs-directory))
 
-(require 'load-packages)
+(provide 'init-env)
 
-;;; init.el ends here
+;;; init-env.el ends here

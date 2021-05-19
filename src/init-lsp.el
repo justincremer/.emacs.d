@@ -34,15 +34,6 @@
   "lS" 'lsp-ui-sideline-mode
   "lX" 'lsp-execute-code-action)
 
-(use-package lsp-treemacs
-  :disabled
-  :after (lsp-mode treemacs)
-  :ensure t)
-
-(use-package flycheck
-  :defer t
-  :hook (lsp-mode . flycheck-mode))
-
 (use-package hover
   :after (lsp-mode lsp-ui)
   :ensure t)

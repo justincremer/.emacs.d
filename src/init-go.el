@@ -50,7 +50,7 @@
 	(exec-path-from-shell-copy-envs '("GOPATH" "GO111MODULE" "GOPROXY")))
 
   ;; (unless (member xiu/go--root-path load-path)
-	;; (add-to-list 'load-path xiu/go--root-path))
+  ;; (add-to-list 'load-path xiu/go--root-path))
 
   (unless (executable-find "gopls")
 	(xiu/go-update-tools xiu/go--tools-no-update xiu/go--tools-update))
