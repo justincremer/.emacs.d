@@ -24,11 +24,12 @@
   (vertico-mode))
 
 (use-package marginalia
-	:after vertico
-	:ensure t
-	:custom
-	(marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
-	:init (marginalia-mode))
+  :disabled
+  :after vertico
+  :ensure t
+  :custom
+  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+  :init (marginalia-mode))
 
 (use-package corfu
   :straight '(corfu :host github

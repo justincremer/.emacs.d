@@ -12,38 +12,38 @@
 
 ;;; Code:
 
-(if (not (version< emacs-version "28.0.0"))
-	"Disables obsolete function messages in `native-comp'."
-  (define-advice define-obsolete-function-alias
-	  (:filter-args (ll) fix-obsolete)
-	(let ((obsolete-name (pop ll))
-		  (current-name (pop ll))
-		  (when (if ll (pop ll) "1"))
-		  (docstring (if ll (pop ll) nil)))
-	  (list obsolete-name current-name when docstring))))
+(require 'init-env)
+(require 'init-package)
+(require 'init-basic)
+(require 'init-ui)
+(require 'init-dashboard)
 
-;; Enables disabled commands without a prompt
-(setq disabled-command-function nil)
+(require 'init-eshell)
+(require 'init-shell)
+(require 'init-perspective)
+(require 'init-general)
+(require 'init-treemacs)
+(require 'init-tabs)
+(require 'init-ivy)
+(require 'init-vertico)
+(require 'init-yasnippet)
+(require 'init-evil)
 
-;; Localizes auto-backups under a single directory
-(setq backup-directory-alist '(("." . "~/.cache/emacs/backups"))
-	  backup-by-copying t
-	  delete-old-versions t
-	  kept-new-versions 6
-	  kept-old-versions 2
-	  version-control t)
-
-;; Keep customization settings out of sight (thanks Ambrevar)
-(setq custom-file
-	  (if (boundp 'server-socket-dir)
-		  (expand-file-name "custom.el" server-socket-dir)
-		(expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
-(load custom-file t)
-
-;; Change the user-emacs-directory to keep unwanted things out of config directory
-(setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-	  url-history-file (expand-file-name "url/history" user-emacs-directory))
-
-(require 'load-packages)
+(require 'init-projectile)
+(require 'init-magit)
+(require 'init-org)
+(require 'init-lsp)
+(require 'init-flycheck)
+(require 'init-company)
+(require 'init-dap)
+(require 'init-docker)
+(require 'init-lisp)
+(require 'init-elisp)
+(require 'init-clisp)
+(require 'init-markdown)
+(require 'init-web)
+(require 'init-dart)
+(require 'init-go)
+(require 'init-haskell)
 
 ;;; init.el ends here
