@@ -9,6 +9,8 @@
 
 (require 'init-custom)
 
+;; Make sure Windows doesn't wreck your char sets (thanks Bill)
+(set-default-coding-systems 'utf-8)
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 (menu-bar-mode -1)
@@ -16,16 +18,16 @@
 (set-fringe-mode 10)
 (column-number-mode)
 (global-display-line-numbers-mode t)
-;; Make sure Windows doesn't wreck your char sets (thanks Bill)
-(set-default-coding-systems 'utf-8)
 
-(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))
+(setq mouse-wheel-scroll-amount '(3 ((shift) . 1))
 	  mouse-wheel-progressive-speed nil
 	  mouse-wheel-follow-mouse 't
 	  scroll-step 1
 	  use-dialog-box nil
 	  visible-bell t
-	  inhibit-startup-message t)
+	  inhibit-startup-message t
+	  default-frame-alist
+	  '((cursor-color . "#c678dd")))
 
 (setq-default tab-width 4)
 (defvar default-font-size 120)

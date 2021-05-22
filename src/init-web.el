@@ -44,7 +44,7 @@
 	:config (js2r-add-keybindings-with-prefix "C-c C-m")))
 
 (use-package typescript-mode
-  :mode ("\\.tsx?\'" . typescript-mode))
+  :mode ("\\.tsx?\\'" . typescript-mode))
 
 (defun xiu/activate-tide-mode ()
   "Use hl-identifier-mode only on js or ts buffers."
@@ -69,7 +69,7 @@
 
 (use-package rjsx-mode
   :after (js2-mode)
-  :mode ("\\.[jt]sx\'" . rjsx-mode))
+  :mode ("\\.[jt]sx\\'" . rjsx-mode))
 
 (use-package mocha
   :after (js2-mode typescript-mode)
