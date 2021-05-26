@@ -35,15 +35,20 @@
 ;;   :hook ((haskell-mode-hook haskell-literate-mode-hook-hook) . lsp))
 
 (use-package haskell-mode
-  ;; :mode ("\\.hs\\'" . haskell-process-load-or-reload)
   :hook ((haskell-mode-hook . interactive-haskell-mode)
 		 (haskell-mode-hook . turn-on-haskell-indentation))
   :bind (:map haskell-mode-map
 			  ("C-c C-g" . haskell-interactive-bring)
-			  ("C-c C-l" . haskell-process-load-or-reload)))
+			  ("C-c C-l" . haskell-process-load-or-reload))
+  :config
+  (use-package ormolu
+	:hook (haskell-mode . ormolu-format-on-save-mode)
+	:bind
+	(:map haskell-mode-map
+		  ("C-c r" . ormolu-format-buffer))))
 
 (use-package lsp-haskell
-	:hook ((haskell-mode-hook haskell-literate-mode-hook-hook) . lsp))
+  :hook ((haskell-mode-hook haskell-literate-mode-hook-hook) . lsp))
 
 (provide 'init-haskell)
 
