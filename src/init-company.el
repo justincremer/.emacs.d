@@ -14,7 +14,8 @@
   (:map company-active-map
 		("<tab>" . company-complete-selection))
   (:map lsp-mode-map
-		("<tab>" . company-indent-or-complete-common))
+		("<tab>" . company-indent-or-complete)
+		("TAB" . company-indent-or-complete))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))

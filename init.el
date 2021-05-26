@@ -44,6 +44,7 @@
 (require 'init-web)
 (require 'init-dart)
 (require 'init-go)
+(require 'init-rust)
 (require 'init-haskell)
 
 ;;; init.el ends here

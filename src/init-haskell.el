@@ -41,11 +41,12 @@
 			  ("C-c C-g" . haskell-interactive-bring)
 			  ("C-c C-l" . haskell-process-load-or-reload))
   :config
-  (use-package ormolu
-	:hook (haskell-mode . ormolu-format-on-save-mode)
-	:bind
-	(:map haskell-mode-map
-		  ("C-c r" . ormolu-format-buffer))))
+  (progn
+	(use-package ormolu
+	  :hook (haskell-mode . ormolu-format-on-save-mode)
+	  :bind
+	  (:map haskell-mode-map
+			("C-c r" . ormolu-format-buffer)))))
 
 (use-package lsp-haskell
   :hook ((haskell-mode-hook haskell-literate-mode-hook-hook) . lsp))
