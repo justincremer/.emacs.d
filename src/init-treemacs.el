@@ -64,10 +64,7 @@
 	(treemacs-icons-dired-mode))
 
   (use-package lsp-treemacs
-  :after (lsp-mode)
-  :disabled
-  :after (lsp-mode treemacs)
-  :ensure t))
+	:after (lsp-mode treemacs)))
 
 (provide 'init-treemacs)
 
