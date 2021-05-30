@@ -91,6 +91,13 @@
 
 (use-package less-css-mode)
 
+(use-package lsp-tailwindcss
+  :disabled
+  :straight '(lsp-tailwindcss :host github
+							  :type git
+							  :repo "merrickluo/lsp-tailwindcss"
+							  :branch "master"))
+
 (use-package skewer-mode
   :disabled
   :diminish
