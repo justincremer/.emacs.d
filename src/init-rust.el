@@ -7,8 +7,6 @@
 
 (defun xiu/rustic--modules ()
   "Install additional rust modules for `rustic-mode'."
-  (use-package rust-mode
-	:config (progn (use-package flycheck-rust)))
 
   (use-package cargo
 	:hook (rust-mode . cargo-minor-mode)
@@ -31,28 +29,33 @@
 	  (setq indent-tabs-mode nil))
 	(add-hook 'racer-mode-hook 'xiu/racer-mode-hook)
 	(add-hook 'racer-mode-hook #'company-mode)
-	(add-hook 'racer-mode-hook #'eldoc-mode)))
+	(add-hook 'racer-mode-hook #'eldoc-mode))
 
-(use-package rustic
-  :ensure
-  :straight t
-  :bind (:map rust-mode-map
-			  ("M-j" . lsp-ui-imenu)
-			  ("M-?" . lsp-find-references)
-			  ("C-c C-t" . racer-describe)
-			  ("C-c C-c l" . flycheck-list-errors)
-			  ("C-c C-c a" . lsp-execute-code-action)
-			  ("C-c C-c r" . lsp-rename)
-			  ("C-c C-c q" . lsp-workspace-restart)
-			  ("C-c C-c Q" . lsp-workspace-shutdown)
-			  ("C-c C-c s" . lsp-rust-analyzer-status))
-  :config
-  (setq rustic-format-on-save t
-		rustic-lsp-server 'rust-analyzer)
-  (progn (xiu/rustic--modules))
+  (use-package rustic
+	:ensure
+	:straight t
+	:bind (:map rust-mode-map
+				("M-j" . lsp-ui-imenu)
+				("M-?" . lsp-find-references)
+				("C-c C-t" . racer-describe)
+				("C-c C-c l" . flycheck-list-errors)
+				("C-c C-c a" . lsp-execute-code-action)
+				("C-c C-c r" . lsp-rename)
+				("C-c C-c q" . lsp-workspace-restart)
+				("C-c C-c Q" . lsp-workspace-shutdown)
+				("C-c C-c s" . lsp-rust-analyzer-status))
+	:config
+	(setq rustic-format-on-save t
+		  rustic-lsp-server 'rust-analyzer))
   (add-hook 'rust-mode-hook '(setq-local buffer-save-without-query t))
   (add-hook	'rust-mode '(lsp-rust-analyzer-cargo-watch-command "clippy"))
   (add-hook 'rust-mode '(lsp-rust-analyzer-server-display-inlay-hints t)))
+
+(use-package rust-mode
+  :config
+  (progn
+	(use-package flycheck-rust)
+	(xiu/rustic--modules)))
 
 (provide 'init-rust)
 
