@@ -32,6 +32,7 @@
 (require 'init-projectile)
 (require 'init-magit)
 (require 'init-org)
+;; (require 'init-latex)
 (require 'init-lsp)
 (require 'init-flycheck)
 (require 'init-company)
@@ -46,5 +47,8 @@
 (require 'init-go)
 (require 'init-rust)
 (require 'init-haskell)
+
+;; (require 'init-pwd)
+;; (require 'init-erc)
 
 ;;; init.el ends here
