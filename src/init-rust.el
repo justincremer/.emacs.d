@@ -46,7 +46,10 @@
 				("C-c C-c s" . lsp-rust-analyzer-status))
 	:config
 	(setq rustic-format-on-save t
-		  rustic-lsp-server 'rust-analyzer))
+		  rustic-lsp-server 'rust-analyzer
+		  lsp-eldoc-hook nil
+		  lsp-enable-symbol-highlighting nil
+		  lsp-signature-auto-activate nil))
   (add-hook 'rust-mode-hook '(setq-local buffer-save-without-query t))
   (add-hook	'rust-mode '(lsp-rust-analyzer-cargo-watch-command "clippy"))
   (add-hook 'rust-mode '(lsp-rust-analyzer-server-display-inlay-hints t)))
