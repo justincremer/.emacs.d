@@ -18,6 +18,7 @@
 (set-fringe-mode 10)
 (column-number-mode)
 (global-display-line-numbers-mode t)
+(set-frame-parameter (selected-frame) 'alpha '(85 . 90))
 
 (setq mouse-wheel-scroll-amount '(3 ((shift) . 1))
 	  mouse-wheel-progressive-speed nil
