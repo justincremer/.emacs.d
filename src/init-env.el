@@ -54,6 +54,9 @@
 		(expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
 (load custom-file t)
 
+;; Ignore risky dir locals so emacs will stop screaming at you every time you open a file
+(advice-add 'risky-local-variable-p :override #'ignore)
+
 (provide 'init-env)
 
 ;;; init-env.el ends here

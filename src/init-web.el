@@ -79,6 +79,7 @@
 
 ;; Install: npm -g install prettier
 (use-package prettier-js
+  :ensure t
   :hook (web-mode . prettier-js-mode))
 
 (use-package css-mode

@@ -22,7 +22,7 @@
 (require 'init-shell)
 (require 'init-perspective)
 (require 'init-general)
-(require 'init-treemacs)
+;; (require 'init-treemacs)
 (require 'init-tabs)
 (require 'init-ivy)
 (require 'init-vertico)
@@ -46,6 +46,7 @@
 (require 'init-dart)
 (require 'init-go)
 (require 'init-rust)
+(require 'init-nasm)
 (require 'init-haskell)
 
 ;; (require 'init-pwd)

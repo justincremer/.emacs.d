@@ -9,8 +9,8 @@
 
 (defun xiu/switch-project-hook ()
   "Switch to a workspace with the project name."
-  (persp-switch (projectile-project-name))
-  (treemacs-display-current-project-exclusively))
+  (persp-switch (projectile-project-name)))
+  ;; (treemacs-display-current-project-exclusively)
 
 (use-package projectile
   :diminish projectile-mode

@@ -7,12 +7,18 @@
 
 ;;; Code:
 
+(use-package glsl-mode :ensure t)
 
-;; :mode (("\\.js\\'" . js2-mode)
+(use-package clang-format :ensure t)
 
-
-(use-package ccls
-  :hook ("\\.c\\" . c-mode))
+(defun clang-format-current-buffer-on-save-hook ()
+  "Create a buffer local save hook."
+  (add-hook 'before-save-hook
+			(lambda ()
+			  (when (locate-dominating-file "." ".clang-format")
+				(clang-format-buffer))
+			  nil)  ;; Continue to save.
+			nil t)) ;; Buffer local hook.
 
 (provide 'init-c)
 
