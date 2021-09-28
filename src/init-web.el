@@ -10,7 +10,7 @@
 (require 'init-custom)
 
 (use-package web-mode
-  :mode ("\\.\\(html?\\|[jt]sx\\|vue\\|svelte\\)$" . web-mode)
+  :mode ("\\.\\(htm[l]?\\|[jt]s[x]?\\|vue\\|svelte\\)$" . web-mode)
   :custom-face
   (css-selector ((t (:inherit default :foreground "#66ccff"))))
   (font-lock-comment-face ((t (:foreground "#828282"))))
@@ -27,12 +27,8 @@
   :interpreter (("node" . js2-mode)
 				("node" . js2-jsx-mode))
   :hook ((js2-mode . js2-imenu-extra-mode)
-		 (js2-mode . js2-highlight-unused-variables-mode))
-  :config
-  ;;   (use-package js2-refactor
-  ;;	:diminish
-  ;;	:hook (js2-mode . js2-refactor-mode)
-  ;;	:config (js2r-add-keybindings-with-prefix "C-c C-m")))
+		 (js2-mode . js2-highlight-unused-variables-mode)
+		 (js2-mode . tree-sitter-mode))
 
   (with-eval-after-load 'flycheck
 	(when (or (executable-find "eslint_d")
@@ -44,7 +40,7 @@
 
 (use-package rjsx-mode
   :after (js2-mode)
-  :mode ("\\.\\(jsx\\|tsx\\)$" . rjsx-mode))
+  :mode ("\\[jt]sx\\'" . rjsx-mode))
 
 ;; (use-package typescript-mode
 ;;   :mode ("\\.tsx?\\'" . typescript-mode))
@@ -57,15 +53,16 @@
   "Use hl-identifier-mode only on js or ts buffers."
   (interactive)
   (when (and (stringp buffer-file-name)
-			 (string-match "\\.tsx?\\'" buffer-file-name))
+			 (string-match "\\.ts[x]?\\'" buffer-file-name))
 	(tide-setup)
-	(tide-hl-identifier-mode)))
+	(tide-hl-identifier-mode +1)
+	(setq tide-format-options '(:indentSize 2 :tabSize 2 :insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil))))
 
 (use-package tide
   ;; :disabled
   :ensure t
   :after (rjsx-mode company flycheck)
-  :hook (web-mode . xiu/activate-tide-mode))
+  :mode ("\\.ts[x]?\\'" . xiu/activate-tide-mode))
 
 ;; (use-package mocha
 ;;   :after (js2-mode typescript-mode)
@@ -93,11 +90,15 @@
 (use-package less-css-mode)
 
 (use-package lsp-tailwindcss
-  :disabled
   :straight '(lsp-tailwindcss :host github
 							  :type git
 							  :repo "merrickluo/lsp-tailwindcss"
 							  :branch "master"))
+
+(use-package graphql-mode
+  :ensure t
+  :mode ("\\.\\(gql[s]?\\|graphql[s]?\\)$" . graphql-mode)
+  )
 
 (use-package skewer-mode
   :disabled

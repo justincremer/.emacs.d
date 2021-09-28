@@ -11,7 +11,6 @@
 ;;
 
 ;;; Code:
-
 (require 'init-env)
 (require 'init-package)
 (require 'init-basic)
@@ -20,6 +19,7 @@
 
 (require 'init-eshell)
 (require 'init-shell)
+(require 'init-tree-sitter)
 (require 'init-perspective)
 (require 'init-general)
 ;; (require 'init-treemacs)

@@ -1,4 +1,4 @@
-;; init-c.el --- Initialize C configurations.      -*- lexical-binding: t -*-
+;;; init-c.el --- Initialize C configurations.      -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;;
