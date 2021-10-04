@@ -34,6 +34,10 @@
 (setq-default tab-width 4)
 (defvar default-font-size 120)
 
+;; (use-package fira-code-mode
+;;   :custom (fira-code-mode-disabled-ligatures '("[]" "x"))
+;;   :hook prog-mode)
+
 (defun xiu/set-font-faces ()
   "Set font faces."
   (message "Setting faces")
