@@ -43,7 +43,7 @@
 (require 'init-c)
 (require 'init-markdown)
 (require 'init-web)
-(require 'init-dart)
+;; (require 'init-dart)
 (require 'init-go)
 (require 'init-rust)
 (require 'init-nasm)
